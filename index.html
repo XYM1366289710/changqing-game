@@ -179,6 +179,63 @@ h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
 .music-now{font-size:12px;color:var(--gold);margin-top:8px;min-height:1.2em;line-height:1.35}
 .top-music{display:flex;gap:4px;align-items:center}
 .top-music .iconbtn{width:36px;height:36px;font-size:14px}
+
+/* 手游手感：按下反馈 */
+.btn,.tab,.chip,.iconbtn,.opt{transition:transform .12s cubic-bezier(.3,1.6,.5,1),filter .12s,box-shadow .12s;user-select:none;-webkit-user-select:none}
+.btn:active,.tab:active,.chip:active,.iconbtn:active{transform:scale(.93) translateY(1px);filter:brightness(1.18)}
+.btn.pri:active{box-shadow:0 4px 12px rgba(79,124,255,.35)}
+.btn.gold:active{box-shadow:0 4px 12px rgba(255,183,3,.3)}
+.opt:active{transform:scale(.97)}
+.lv .c{transition:transform .12s cubic-bezier(.3,1.6,.5,1)}
+.lv.open:active .c{transform:scale(.88);animation:none}
+.tap-ring{position:fixed;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;pointer-events:none;z-index:40;
+  border:2px solid rgba(255,209,102,.85);animation:tapRing .45s ease-out forwards}
+@keyframes tapRing{to{transform:scale(5);opacity:0}}
+
+/* 推荐关高亮（rs06） */
+.lv.lv-rec .c{border:3px solid var(--gold);background:radial-gradient(circle at 35% 30%,#3a2f10,#1d1606);color:var(--gold);
+  box-shadow:0 0 0 6px rgba(255,209,102,.18),0 0 28px rgba(255,183,3,.55);animation:recGlow 1.6s ease-in-out infinite}
+.lv.lv-rec.clear .c{background:radial-gradient(circle at 35% 30%,#ffd166,#e09a00);color:#2a1a00}
+.lv.lv-rec .c::before{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px dashed rgba(255,209,102,.7);animation:spin 6s linear infinite}
+.lv.lv-rec .c::after{content:"👇";position:absolute;top:-30px;left:50%;font-size:20px;transform:translateX(-50%);animation:bob 1s ease-in-out infinite}
+.lv.lv-rec .t{color:var(--gold)}
+.lv-row.rec-row::before{content:"";position:absolute;inset:-6px -2px;border-radius:999px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,209,102,.13),transparent);background-size:200% 100%;animation:shine 2.4s linear infinite}
+.rec-card .btn.gold{position:relative;overflow:hidden}
+.rec-card .btn.gold::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;transform:skewX(-20deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:sweep 2.6s ease-in-out infinite}
+@keyframes recGlow{0%,100%{transform:scale(1);box-shadow:0 0 0 6px rgba(255,209,102,.18),0 0 22px rgba(255,183,3,.45)}50%{transform:scale(1.08);box-shadow:0 0 0 10px rgba(255,209,102,.1),0 0 36px rgba(255,183,3,.75)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+@keyframes shine{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes sweep{0%,55%{left:-60%}100%{left:130%}}
+
+/* 星星弹出 */
+.star-fly{position:fixed;left:50%;top:42%;z-index:45;pointer-events:none;text-align:center;transform:translate(-50%,-50%)}
+.star-fly .s{font-size:96px;line-height:1;color:var(--gold);text-shadow:0 0 30px rgba(255,183,3,.9),0 6px 0 #b77900;
+  animation:starBig .9s cubic-bezier(.2,1.5,.4,1) forwards}
+.star-fly .p{font-size:18px;font-weight:900;color:#fff;margin-top:6px;text-shadow:0 2px 8px rgba(0,0,0,.6);animation:starTxt .9s ease forwards}
+.star-fly.out{animation:flyOut .45s ease-in forwards}
+@keyframes starBig{0%{transform:scale(0) rotate(-180deg)}60%{transform:scale(1.35) rotate(15deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes starTxt{0%,30%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+@keyframes flyOut{to{opacity:0;transform:translate(-50%,-260%) scale(.3)}}
+.gold.pop{display:inline-block;animation:starPop .7s cubic-bezier(.2,1.6,.4,1)}
+
+/* 通关彩纸 + 横幅 */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:44}
+.clear-banner{position:fixed;left:50%;top:30%;z-index:46;pointer-events:none;transform:translate(-50%,-50%);text-align:center;
+  padding:18px 26px;border-radius:22px;background:linear-gradient(180deg,rgba(42,32,8,.95),rgba(20,16,4,.95));border:2px solid var(--gold);
+  box-shadow:0 0 50px rgba(255,183,3,.5),0 20px 60px rgba(0,0,0,.6);animation:bannerIn .6s cubic-bezier(.2,1.6,.4,1)}
+.clear-banner b{display:block;font-size:28px;letter-spacing:3px;background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;color:transparent}
+.clear-banner .bs{font-size:34px;color:var(--gold);letter-spacing:6px;margin-top:4px}
+.clear-banner .bs span{display:inline-block;animation:starPop .6s cubic-bezier(.2,1.6,.4,1) both}
+.clear-banner .bs span:nth-child(2){animation-delay:.15s}.clear-banner .bs span:nth-child(3){animation-delay:.3s}
+.clear-banner.out{transition:opacity .4s,transform .4s;opacity:0;transform:translate(-50%,-50%) scale(.8)}
+@keyframes bannerIn{0%{transform:translate(-50%,-50%) scale(.3);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .lv.lv-rec .c,.lv.lv-rec .c::before,.lv.lv-rec .c::after,.lv-row.rec-row::before,.rec-card .btn.gold::after{animation:none}
+}
 </style>
 </head>
 <body>
@@ -214,6 +271,7 @@ h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
   <div id="app"></div>
 </div>
 <div class="toast" id="toast"></div>
+<canvas id="fx"></canvas>
 <script>
 var ROOT="P:\\常青老师课程\\";
 var COURSES=[{"key": "zx", "name": "执行力系统课程", "short": "执行力"}, {"key": "xx", "name": "学习力闭环训练营", "short": "学习力"}, {"key": "rs", "name": "人生规划罗盘", "short": "人生罗盘"}, {"key": "zs", "name": "知识体系训练营", "short": "知识体系"}, {"key": "wn", "name": "外脑系统训练营", "short": "外脑"}, {"key": "zy", "name": "职业规划系统", "short": "职业规划"}, {"key": "zt", "name": "思维专题课（选修）", "short": "思维专题"}, {"key": "sj", "name": "赠送·时间整理术（选修）", "short": "时间整理术"}];
@@ -236,9 +294,11 @@ var S={tab:"game",level:null,phase:"story",si:0,ai:0,picks:[],course:"zx",starte
 var ORDER=STATUSES;
 function raise(id,v){if(ORDER.indexOf(lessonSt[id])<ORDER.indexOf(v)){lessonSt[id]=v;wr(KEY,lessonSt)}}
 function mark(id,k){var p=game[id]||{story:false,quiz:false,task:false};if(p[k])return;p[k]=true;game[id]=p;wr(GAME_KEY,game);
-  raise(id,k==="task"?"已用上":k==="quiz"?"学完":"在学");toast("获得 1 颗星 ★",true)}
+  raise(id,k==="task"?"已用上":k==="quiz"?"学完":"在学");toast("获得 1 颗星 ★",true);
+  var n=starsOf(p);popStar={id:id,n:n};starFly(n);if(n>=3)setTimeout(function(){levelClear(id)},650)}
+var popStar=null;
 function toast(t,star){var e=document.getElementById("toast");e.innerHTML=star?'<span class="star-pop">★</span> '+esc(t):esc(t);e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove("on")},1800)}
-function stars(n,big){var s="";for(var i=0;i<3;i++)s+=i<n?'<span class="gold">★</span>':'<span class="st0">☆</span>';return '<span style="font-size:'+(big?20:12)+'px;letter-spacing:2px">'+s+'</span>'}
+function stars(n,big,pop){var s="";for(var i=0;i<3;i++)s+=i<n?'<span class="gold'+(i===pop?' pop':'')+'">★</span>':'<span class="st0">☆</span>';return '<span style="font-size:'+(big?20:12)+'px;letter-spacing:2px">'+s+'</span>'}
 function total(){var t=0;for(var k in game)t+=starsOf(game[k]);return t}
 var BUILT=LESSONS.filter(function(l){return EPISODES[l.id]}).map(function(l){return l.id});
 var EARLY_OPEN={rs06:1,zx01:1}; // 复盘、执行力01 开局可进
@@ -550,9 +610,9 @@ function renderMap(){
     h+='<div class="course">'+esc(c.name)+'</div><div class="map"><div class="map-path"></div>';
     ls.forEach(function(l){
       n++;var built=!!EPISODES[l.id],open=built&&unlocked(l.id),s=starsOf(game[l.id]);
-      var cls="lv"+(open?" open":"")+(s>=1?" clear":"");
+      var rec=isRec(l.id)&&built,cls="lv"+(open?" open":"")+(s>=1?" clear":"")+(rec?" lv-rec":"");
       var sub=built?(open?(s>=3?"三星通关":s>=1?"继续拿星":(isRec(l.id)?"推荐 · 开局可进":"可以进入")):(EARLY_OPEN[l.id]?"开局可进":"先过上一关或拿 1 星")):"即将上线";
-      h+='<div class="lv-row"><button class="'+cls+'" '+(open?'data-open="'+l.id+'"':'')+' aria-label="'+esc(l.n)+'"><div class="c">'+(s>=3?"★":n)+'</div><div class="meta"><div class="t">'+esc(l.n)+(isRec(l.id)?'<span class="rec">推荐</span>':'')+'</div>'+(built?'<div class="s">'+stars(s)+'</div>':'')+'<div class="sub">'+sub+'</div></div></button></div>';
+      h+='<div class="lv-row'+(rec?' rec-row':'')+'"><button class="'+cls+'" '+(open?'data-open="'+l.id+'"':'')+' aria-label="'+esc(l.n)+'"><div class="c">'+(s>=3?"★":n)+'</div><div class="meta"><div class="t">'+esc(l.n)+(isRec(l.id)?'<span class="rec">推荐</span>':'')+'</div>'+(built?'<div class="s">'+stars(s)+'</div>':'')+'<div class="sub">'+sub+'</div></div></button></div>';
     });
     h+='</div>';
   });
@@ -572,7 +632,7 @@ function renderPlayer(){
   var ep=EPISODES[S.level],prog=game[ep.id]||EMPTY;
   var ph=["story","cliff","teacher","after","quiz","task"],lb=["剧情","悬念","老师出招","结局","答题","现实任务"];
   var doneSteps=(prog.story?1:0)+(prog.quiz?1:0)+(prog.task?1:0);
-  var h='<div class="muted">'+esc(ep.ep)+' · '+esc(ep.courseLabel||(LESSONS.find(function(l){return l.id===ep.id})||{}).n||'')+'</div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h1 class="ep">'+esc(ep.title)+'</h1>'+stars(starsOf(prog),true)+'</div>';
+  var h='<div class="muted">'+esc(ep.ep)+' · '+esc(ep.courseLabel||(LESSONS.find(function(l){return l.id===ep.id})||{}).n||'')+'</div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h1 class="ep">'+esc(ep.title)+'</h1>'+stars(starsOf(prog),true,popStar&&popStar.id===ep.id?popStar.n-1:-1)+'</div>';
   h+='<div class="xp"><i style="width:'+(doneSteps/3*100)+'%"></i></div>';
   h+='<div class="phases">'+ph.map(function(p,i){return '<span class="'+(p===S.phase?'on':'')+'">'+lb[i]+'</span>'}).join("")+'</div>';
   if(S.phase==="story"){h+=dots(ep.scenes.length,S.si)+sceneCard(ep.scenes[S.si],S.si,ep.scenes.length)+'<div class="row">'+(S.si>0?'<button class="btn" data-act="prev">上一幕</button>':'')+
@@ -610,7 +670,7 @@ function render(){
   if(!S.started)return;
   document.querySelectorAll(".tab").forEach(function(b){b.classList.toggle("on",b.dataset.tab===S.tab)});
   document.getElementById("app").innerHTML=S.tab==="tracker"?renderTracker():(S.level?renderPlayer():renderMap());
-  syncMuteBtn();
+  syncMuteBtn();popStar=null;
 }
 function go(f){f();render();window.scrollTo(0,0)}
 document.addEventListener("click",function(e){
@@ -628,6 +688,49 @@ document.addEventListener("click",function(e){
   if(A[a])go(A[a]);
 });
 document.addEventListener("change",function(e){var s=e.target;if(s.dataset&&s.dataset.st){lessonSt[s.dataset.st]=s.value;wr(KEY,lessonSt);render()}});
+
+// ===== 手游特效：按下反馈 / 星星弹出 / 通关彩纸 =====
+var REDUCED=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function sfx(notes,type,gain,step){if(muted||!actx)return;try{ensureAudio();var t0=actx.currentTime+0.01;notes.forEach(function(f,i){tone(f,t0+i*(step||0.08),0.14,type||"square",gain||0.1)})}catch(e){}}
+function buzz(ms){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+document.addEventListener("pointerdown",function(e){
+  var t=e.target.closest("button,.opt");if(!t||!S.started)return;
+  if(!REDUCED){var r=document.createElement("div");r.className="tap-ring";r.style.left=e.clientX+"px";r.style.top=e.clientY+"px";document.body.appendChild(r);setTimeout(function(){r.remove()},500)}
+  buzz(8);sfx([880],"triangle",0.06);
+},{passive:true});
+function starFly(n){
+  sfx([784,1046.5,1318.5],"square",0.14,0.07);buzz([15,40,15]);
+  var d=document.createElement("div");d.className="star-fly";d.innerHTML='<div class="s">★</div><div class="p">第 '+n+' 颗星！</div>';
+  document.body.appendChild(d);setTimeout(function(){d.classList.add("out")},850);setTimeout(function(){d.remove()},1350);
+  if(!REDUCED)confetti(40,0.5,0.42);
+}
+function levelClear(id){
+  var l=LESSONS.find(function(x){return x.id===id})||{n:""};
+  sfx([523.25,659.25,783.99,1046.5,1318.5,1568],"square",0.16,0.1);buzz([30,60,30,60,80]);
+  var b=document.createElement("div");b.className="clear-banner";
+  b.innerHTML='<b>关卡完成！</b><div class="muted" style="color:var(--ink2)">'+esc(l.n)+' · 三星通关</div><div class="bs"><span>★</span><span>★</span><span>★</span></div>';
+  document.body.appendChild(b);setTimeout(function(){b.classList.add("out")},2300);setTimeout(function(){b.remove()},2800);
+  if(!REDUCED){confetti(160,0.5,0.3);setTimeout(function(){confetti(80,0.15,0.6);confetti(80,0.85,0.6)},350)}
+}
+var fxParts=[],fxRun=false;
+function confetti(count,ox,oy){
+  var c=document.getElementById("fx");if(!c)return;
+  var W=c.width=innerWidth*(devicePixelRatio||1),H=c.height=innerHeight*(devicePixelRatio||1),k=devicePixelRatio||1;
+  var cols=["#ffd166","#ffb703","#ff8fab","#7aa2ff","#3ddc97","#9b8cff","#ffffff"];
+  for(var i=0;i<count;i++){var a=Math.random()*Math.PI*2,v=(4+Math.random()*9)*k;
+    fxParts.push({x:W*ox,y:H*oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-6*k,w:(5+Math.random()*6)*k,h:(8+Math.random()*8)*k,
+      r:Math.random()*6,vr:(Math.random()-.5)*0.4,c:cols[i%cols.length],life:0,max:90+Math.random()*60,star:Math.random()<.15})}
+  if(!fxRun){fxRun=true;requestAnimationFrame(fxTick)}
+}
+function fxTick(){
+  var c=document.getElementById("fx"),g=c.getContext("2d"),k=devicePixelRatio||1;g.clearRect(0,0,c.width,c.height);
+  fxParts=fxParts.filter(function(p){return p.life<p.max&&p.y<c.height+40});
+  fxParts.forEach(function(p){p.life++;p.vy+=0.28*k;p.vx*=0.985;p.vy*=0.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+    g.save();g.globalAlpha=Math.min(1,(p.max-p.life)/25);g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;
+    if(p.star){g.font=(p.h*1.6)+"px sans-serif";g.fillText("★",-p.h/2,p.h/2)}else g.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.life*0.15)));
+    g.restore()});
+  if(fxParts.length)requestAnimationFrame(fxTick);else{fxRun=false;g.clearRect(0,0,c.width,c.height)}
+}
 syncMuteBtn();
 </script>
 </body>
