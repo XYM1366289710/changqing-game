@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>常青闯关 · 执行力短剧</title>
+<style>
+:root{
+  --bg:#070b16;--bg2:#10182b;--card:#141c31;--card2:#1a243c;
+  --ink:#eef2ff;--ink2:#a9b4d0;--ink3:#6e7a99;
+  --line:rgba(255,255,255,.08);--glow:#4f7cff;--glow2:#7aa2ff;
+  --gold:#ffd166;--gold2:#ffb703;--ok:#3ddc97;--bad:#ff6b6b;
+  --pink:#ff8fab;--violet:#9b8cff;--r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+  font-size:16px;line-height:1.55;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(79,124,255,.28), transparent 60%),
+    radial-gradient(800px 500px at 100% 20%, rgba(155,140,255,.12), transparent 50%),
+    radial-gradient(700px 400px at 0% 80%, rgba(61,220,151,.08), transparent 50%),
+    linear-gradient(180deg,#070b16,#0c1222 40%,#070b16)}
+.wrap{position:relative;z-index:1;max-width:430px;margin:0 auto;padding:14px 14px calc(28px + env(safe-area-inset-bottom))}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand b{font-size:15px;letter-spacing:.5px}
+.brand span{font-size:11px;color:var(--ink3)}
+.iconbtn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--ink);font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.iconbtn.on{border-color:rgba(79,124,255,.5);box-shadow:0 0 0 3px rgba(79,124,255,.15);color:var(--glow2)}
+.tabs{display:flex;gap:8px;margin:0 0 14px;position:sticky;top:0;z-index:6;padding:6px 0;background:linear-gradient(180deg,rgba(7,11,22,.95),rgba(7,11,22,.75))}
+.tab{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:999px;padding:11px;font-size:14px;
+  color:var(--ink2);font-weight:700;cursor:pointer}
+.tab.on{background:linear-gradient(135deg,var(--glow),#6a5cff);border-color:transparent;color:#fff;
+  box-shadow:0 8px 24px rgba(79,124,255,.35)}
+.card{background:linear-gradient(180deg,rgba(26,36,60,.92),rgba(16,24,43,.92));border:1px solid var(--line);
+  border-radius:var(--r);padding:16px;margin:0 0 12px;backdrop-filter:blur(8px);
+  box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.muted{color:var(--ink3);font-size:12px}
+.rank-card{position:relative;overflow:hidden}
+.rank-card::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,209,102,.25),transparent 70%);pointer-events:none}
+.rank{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.rank .name{font-size:26px;font-weight:800;background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;color:transparent}
+.rank .stars{font-size:26px;font-weight:800;color:var(--gold)}
+.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:12px 0 8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--glow),var(--gold));border-radius:999px;
+  box-shadow:0 0 12px rgba(79,124,255,.6);transition:width .4s ease}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--ink);border-radius:14px;padding:13px 16px;font-size:15px;font-weight:700;cursor:pointer}
+.btn.pri{background:linear-gradient(135deg,var(--glow),#6a5cff);border-color:transparent;color:#fff;
+  box-shadow:0 10px 28px rgba(79,124,255,.4)}
+.btn.gold{background:linear-gradient(135deg,var(--gold2),#ffd166);border:0;color:#2a1a00;box-shadow:0 10px 28px rgba(255,183,3,.35)}
+.btn.full{width:100%}
+.btn:active{transform:scale(.98)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.course{margin:16px 0 10px;font-weight:800;font-size:13px;letter-spacing:1px;color:var(--ink2);text-transform:none;
+  display:flex;align-items:center;gap:8px}
+.course::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--glow);box-shadow:0 0 10px var(--glow)}
+
+/* Game map path */
+.map{position:relative;padding:8px 4px 4px}
+.map-path{position:absolute;left:50%;top:20px;bottom:20px;width:3px;transform:translateX(-50%);
+  background:linear-gradient(180deg,rgba(79,124,255,.6),rgba(255,209,102,.25),rgba(255,255,255,.08));border-radius:999px;opacity:.7}
+.lv-row{position:relative;display:flex;align-items:center;margin:0 0 18px;z-index:1}
+.lv-row:nth-child(odd){justify-content:flex-start;padding-right:18%}
+.lv-row:nth-child(even){justify-content:flex-end;padding-left:18%}
+.lv{all:unset;cursor:default;display:flex;align-items:center;gap:10px;max-width:78%}
+.lv-row:nth-child(even) .lv{flex-direction:row-reverse;text-align:right}
+.lv .c{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;
+  border:2px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--ink3);position:relative;
+  box-shadow:inset 0 0 20px rgba(0,0,0,.35)}
+.lv.open{cursor:pointer}
+.lv.open .c{border:2px solid var(--glow2);background:radial-gradient(circle at 35% 30%,#2a3d6e,#132040);
+  color:#fff;box-shadow:0 0 0 5px rgba(79,124,255,.18),0 8px 22px rgba(79,124,255,.35);animation:pulse 2.2s ease-in-out infinite}
+.lv.clear .c{background:radial-gradient(circle at 35% 30%,#ffd166,#e09a00);border-color:#ffd166;color:#2a1a00;
+  box-shadow:0 0 0 5px rgba(255,209,102,.15),0 8px 22px rgba(255,183,3,.3);animation:none}
+.lv .meta{display:flex;flex-direction:column;gap:2px}
+.lv .t{font-size:13px;font-weight:700;color:var(--ink2);line-height:1.3}
+.lv.open .t,.lv.clear .t{color:var(--ink)}
+.lv .sub{font-size:11px;color:var(--ink3)}
+.lv .s{font-size:12px;letter-spacing:1px;color:var(--gold)}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+
+.st0{color:rgba(255,255,255,.2)}
+.gold{color:var(--gold)}
+.phases{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 12px}
+.phases span{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--ink3)}
+.phases span.on{border-color:rgba(79,124,255,.5);color:var(--glow2);background:rgba(79,124,255,.12);font-weight:700}
+.dots{display:flex;gap:6px;margin:0 0 10px}
+.dots i{flex:1;max-width:28px;height:6px;border-radius:999px;background:rgba(255,255,255,.1)}
+.dots i.on{background:linear-gradient(90deg,var(--glow),var(--gold))}
+
+/* Story stage */
+.stage{position:relative;min-height:230px;border-radius:20px;overflow:hidden;border:1px solid var(--line);
+  background:
+    radial-gradient(600px 240px at 50% 0%, rgba(79,124,255,.22), transparent 55%),
+    linear-gradient(180deg,#121a2e,#0a1020);
+  box-shadow:inset 0 0 80px rgba(0,0,0,.45);padding:18px;display:flex;flex-direction:column;gap:12px}
+.stage.cliff{background:
+  radial-gradient(500px 220px at 50% 30%, rgba(255,107,107,.18), transparent 55%),
+  linear-gradient(180deg,#1a1220,#0a1020)}
+.stage.teacher{background:
+  radial-gradient(500px 220px at 50% 20%, rgba(255,209,102,.16), transparent 55%),
+  linear-gradient(180deg,#1a1828,#0a1020)}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.45) 100%)}
+.stage > *{position:relative;z-index:1}
+.stage .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3)}
+.plate{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:6px 12px 6px 6px;border-radius:999px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1)}
+.plate .av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
+.av.ym{background:linear-gradient(135deg,#ff8fab,#ff6b9d)}
+.av.nb{background:linear-gradient(135deg,#6e7a99,#4a5568)}
+.av.ls{background:linear-gradient(135deg,#ffd166,#f4a261);color:#2a1a00}
+.av.qt{background:linear-gradient(135deg,#7aa2ff,#6a5cff)}
+.plate .nm{font-size:12px;font-weight:800}
+.line{font-size:18px;line-height:1.65;font-weight:600}
+.line.n{color:var(--ink2);font-weight:500;font-size:16px}
+.cliff-txt{font-size:22px;font-weight:800;line-height:1.45;text-align:center;padding:24px 8px}
+.tag{font-size:12px;font-weight:800;color:var(--gold);letter-spacing:1px}
+
+.opt{all:unset;display:block;padding:13px 14px;border-radius:14px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);margin-top:8px;font-size:14px;cursor:pointer;transition:transform .1s}
+.opt:active{transform:scale(.99)}
+.opt.right{background:rgba(61,220,151,.12);border-color:var(--ok);color:#b8ffe0}
+.opt.wrong{background:rgba(255,107,107,.12);border-color:var(--bad);color:#ffc9c9}
+.fb{margin-top:10px;font-size:13px;color:var(--ink2)}
+.fb b.ok{color:var(--ok)} .fb b.no{color:var(--bad)}
+.done{color:var(--ok);font-weight:800}
+
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);background:rgba(20,28,49,.95);
+  color:#fff;padding:12px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;z-index:20;
+  border:1px solid rgba(255,209,102,.35);box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .3s}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .star-pop{display:inline-block;animation:starPop .6s ease}
+@keyframes starPop{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1)}}
+
+/* Gate overlay */
+.gate{position:fixed;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center;
+  background:
+    radial-gradient(800px 500px at 50% 20%, rgba(79,124,255,.35), transparent 60%),
+    linear-gradient(180deg,#070b16,#0b1020);padding:24px}
+.gate-card{width:100%;max-width:400px;background:linear-gradient(180deg,#1a243c,#121a2e);border:1px solid var(--line);
+  border-radius:24px;padding:28px 22px 22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5);margin-bottom:env(safe-area-inset-bottom)}
+.gate-card .logo{font-size:42px;margin-bottom:8px}
+.gate-card h1{font-size:24px;margin:0 0 8px}
+.gate-card p{color:var(--ink2);font-size:14px;margin:0 0 18px}
+.gate.hidden{display:none}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.chip{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:999px;padding:7px 12px;font-size:12px;color:var(--ink2);cursor:pointer}
+.chip.on{background:rgba(79,124,255,.18);border-color:rgba(79,124,255,.5);color:var(--glow2);font-weight:700}
+.pb{display:flex;align-items:center;gap:10px;font-size:12px;margin:6px 0}
+.pb .l{flex:0 0 72px;color:var(--ink2)}.pb .bar{flex:1;margin:0}.pb .v{flex:0 0 48px;text-align:right;color:var(--ink3)}
+.les h3{font-size:15px;margin:0 0 6px}
+.les p{margin:6px 0;font-size:13px;color:var(--ink2)}
+.les .k{color:var(--ink3);font-size:11px;font-weight:700;display:block;margin-bottom:2px}
+.les select{font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#0d1424;color:var(--ink);margin-top:6px;width:100%}
+.path{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;color:var(--ink3);word-break:break-all;margin-top:6px}
+.xp{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0 0}
+.xp>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));width:0;transition:width .35s}
+h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
+</style>
+</head>
+<body>
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="logo">⭐</div>
+    <h1>常青闯关</h1>
+    <p>看燕美在财务室遇到难题，请老师出招，答题拿星，再在真实工作里用一次。<br>点下面开始，并开启背景音乐。</p>
+    <button class="btn gold full" id="startBtn">开始游戏 · 开启音乐</button>
+    <button class="btn full" id="startMuted" style="margin-top:8px">先静音开始</button>
+  </div>
+</div>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><b>常青闯关 · 执行力短剧</b><span>关卡地图 · 短剧 · 答题 · 现实任务</span></div>
+    <button class="iconbtn" id="muteBtn" title="音乐" aria-label="音乐开关">🔇</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-tab="game">闯关模式</button>
+    <button class="tab" data-tab="tracker">学习进度表</button>
+  </div>
+  <div id="app"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var ROOT="P:\\常青老师课程\\";
+var COURSES=[{"key": "zx", "name": "执行力系统课程", "short": "执行力"}, {"key": "xx", "name": "学习力闭环训练营", "short": "学习力"}, {"key": "rs", "name": "人生规划罗盘", "short": "人生罗盘"}, {"key": "zs", "name": "知识体系训练营", "short": "知识体系"}, {"key": "wn", "name": "外脑系统训练营", "short": "外脑"}, {"key": "zy", "name": "职业规划系统", "short": "职业规划"}, {"key": "zt", "name": "思维专题课（选修）", "short": "思维专题"}, {"key": "sj", "name": "赠送·时间整理术（选修）", "short": "时间整理术"}];
+var LESSONS=[{"id": "zx01", "c": "zx", "n": "01 执行理念", "dir": "执行力系统课程\\01-执行理念", "file": "文稿笔记.md", "core": "执行拉垮不是意志力问题，是系统问题。按王阳明“知行合一”，用一套系统去管住执行，而不是头疼医头。", "use": "挑一件总在拖的活（比如贷后资料补交），写一句：它卡在“不想做、做不动、忘了做”的哪一种。"}, {"id": "zx02", "c": "zx", "n": "02 执行原理", "dir": "执行力系统课程\\02-执行原理", "file": "文稿笔记.md", "core": "福格行为模型：行为 = 动机 × 能力 × 提示，缺一角就停。兴趣级动机容易退，刚需级才持久；三角对应动力、任务、提示三套系统。", "use": "拿本月一件“计划了没做到”的事（比如流水对账），给三个角各打一分，找出最弱的那一角。", "d": "已用上"}, {"id": "zx03", "c": "zx", "n": "03 动力系统", "dir": "执行力系统课程\\03-动力系统", "file": "文稿笔记.md", "core": "动力来自刺激点：痛点越痛、爽点越爽，改变意愿越强。愿望不等于刚需，用具体化、可视化、重复化把愿望变成执念。", "use": "把“不想再一个个登网银导流水”写成一句具体的痛点，设成桌面壁纸或贴在显示器上。", "d": "已用上"}, {"id": "zx04", "c": "zx", "n": "04 提示系统", "dir": "执行力系统课程\\04-提示系统", "file": "文稿笔记.md", "core": "大脑会冲淡激情、会遗忘、会被环境带偏。用鲶鱼效应（激励者、陪伴者、引导者）、触发提醒和环境改造来对抗。", "use": "给明天最重要的一件事（如付款审批）设一个定时提醒，把要用的表格放到桌面最显眼处。", "d": "在学"}, {"id": "zx05", "c": "zx", "n": "05 任务系统", "dir": "执行力系统课程\\05-任务系统", "file": "文稿笔记.md", "core": "像游戏一样派任务：自动推送省掉决策，难度卡在“有挑战能完成”。三段式任务量；想逃避时用最小动作和最终幻想，做完给激励。", "use": "把今天最难的一件（如月报）切成基础、正常、冲刺三档，第一步只写一个 5 分钟动作：打开模板。", "d": "已用上"}, {"id": "zx06", "c": "zx", "n": "06 综合状态", "dir": "执行力系统课程\\06-综合状态", "file": "文稿笔记.md", "core": "四种状态毁掉执行：反馈慢导致失望、放纵后自责、生理波动、外界刺激导致焦虑。对策有预期管理、场景预判、精力管理、减少焦虑信息、时间模块化。", "use": "今天哪一段崩了，就只放弃那一段，到下一个饭点重启（并联，不是串联）。", "d": "已用上"}, {"id": "zx07", "c": "zx", "n": "07 加餐·执行力周期", "dir": "执行力系统课程\\07-加餐-执行力周期", "file": "课程原文.md", "core": "做任何事都会经历新鲜期、疲劳期、麻木期、内化期。撑过去靠多重意义加持、把“想”变成“做”、适当借助外部激励。", "use": "判断你对“学这套课”正处在哪一期，再写一条“想学好”以外的意义，比如少熬一次夜对账。"}, {"id": "xx01", "c": "xx", "n": "01 理解力", "dir": "学习力闭环训练营·第2期\\01-理解力", "file": "文稿笔记.md", "core": "理解力是从信息里快速准确抓重点。它受背景知识和工作记忆（7±2）限制；用框架学习法：抓主线、抓重点（结论、加粗、小标题）、看主题—论点—论据。", "use": "银行发来新通知时，只看标题和加粗句，用一句话写下“它要我做什么”。", "d": "学完"}, {"id": "xx06", "c": "xx", "n": "加餐1 理解力卡点", "dir": "学习力闭环训练营·第2期\\06-直播加餐1-理解力卡点如何打通", "file": "课程原文.md", "core": "按你 7 月的笔记：词、句、段、篇四层读法；找中心句和支撑句；带着主线问题去读；看清“破—立”结构。", "use": "读一份贷款合同或银行回函时，每段只划一句中心句。", "d": "学完"}, {"id": "xx02", "c": "xx", "n": "02 提炼力", "dir": "学习力闭环训练营·第2期\\02-提炼力", "file": "文稿笔记.md", "core": "把作者的知识变成自己的。心法是“六经注我”，五招是提炼触点、关联案例、能用在哪、注意边界、纳入体系。", "use": "合上笔记，不用任何术语讲一遍“最小动作”，讲不出就问：这事在我身上发生过吗？", "d": "已用上"}, {"id": "xx03", "c": "xx", "n": "03 迁移力", "dir": "学习力闭环训练营·第2期\\03-迁移力", "file": "文稿笔记.md", "core": "把只能认出来的惰性知识变成用得出来的活性知识。四个练法：理论找理论、理论找案例、案例找理论、结构性迁移。", "use": "结构性迁移：把已经跑通的一家银行导出步骤，对照另一家，找出相同的骨架。"}, {"id": "xx04", "c": "xx", "n": "04 记忆力", "dir": "学习力闭环训练营·第2期\\04-记忆力", "file": "文稿笔记.md", "core": "记忆六板斧：高集中、强刺激、有逻辑、超连接、场景化、高重复。学之前有仪式感和问题意识，累了就休息，靠间隔重复记牢。", "use": "睡前闭眼回想今天学的一个概念，早上醒来再说一遍。", "d": "已用上"}, {"id": "xx05", "c": "xx", "n": "05 应用力", "dir": "学习力闭环训练营·第2期\\05-应用力", "file": "文稿笔记.md", "core": "知识的最高境界是“无招胜有招”：显性知识要靠实践变成隐性能力。五种刻意练习：提炼、迁移、复盘日记、沙盘推演、清单式训练，练完马上复盘。", "use": "把一项常做的流程（如回单整理）写成一张清单，下次照着做一遍，再改一处。"}, {"id": "xx07", "c": "xx", "n": "加餐2 提炼迁移力打通", "dir": "学习力闭环训练营·第2期\\07-直播加餐2-提炼迁移力如何打通", "file": "课程原文.md", "core": "对笔记再加工：用自己的话压缩概括、关联案例、能用在哪、适用边界、纳入体系。工作流可以简化，也可以让 AI 辅助提炼。", "use": "让 AI 先压缩一节笔记，你再把它改成一句“我的话”。"}, {"id": "rs00", "c": "rs", "n": "00 开营仪式", "dir": "人生规划罗盘\\00-开营仪式", "file": "文稿笔记.md", "core": "罗盘是从找目标到实现目标的整套方案。常青老师靠复盘日记（600 万字以上）、梦想清单、周计划跟踪表一路走出来。", "use": "翻一下课件里他的复盘日记和周计划表，只挑一个你想照抄的格式。"}, {"id": "rs01", "c": "rs", "n": "01 分块", "dir": "人生规划罗盘\\01-分块", "file": "文稿笔记.md", "core": "人生不可控才更要规划。把人生分块，每一块相对可控、对时间更敏感、不容易焦虑彷徨；前提是心里真的认同。", "use": "给现在这一块起个名字，比如“2026–2028 财务实操 + AI 流程化阶段”，写在档案首页。"}, {"id": "rs02", "c": "rs", "n": "02 定向", "dir": "人生规划罗盘\\02-定向", "file": "文稿笔记.md", "core": "方向 = 向内求 + 向外找。向内用梦想清单唤醒真实需求；向外靠模仿、练底层通用能力、养精英习惯。", "use": "找一个做财务数字化或 AI 流程化的人，模仿他一个具体做法。"}, {"id": "rs03", "c": "rs", "n": "03 分解", "dir": "人生规划罗盘\\03-分解", "file": "文稿笔记.md", "core": "避开“大而全”和“模糊没落脚点”。先用 SMART 里的具体、可衡量；抓二八定律的关键要素；深挖意义、预估困难、设时间节点。", "use": "把流水导出项目写成一句能判断的目标：下个月末还要不要一个个登网银。"}, {"id": "rs04", "c": "rs", "n": "04 统筹", "dir": "人生规划罗盘\\04-统筹", "file": "文稿笔记.md", "core": "统筹是统一调配资源达成目标。五维度统筹法按年、季、月、周、日排节点，配合 OKR；只用在对结果有明确要求的项目上。", "use": "把 PBL 项目的 KR1–KR6 各放进一个月份。"}, {"id": "rs05", "c": "rs", "n": "05 部署", "dir": "人生规划罗盘\\05-部署", "file": "文稿笔记.md", "core": "周计划、日计划是落地层。计划是为了心中有数，不是死守；周末复盘时做下周计划，先梳理再部署，分确定任务和备胎任务，已养成的习惯不用写。", "use": "周五下班前，把下周固定要做的（工资、还款日、报表）先填进日程，再列两个备胎任务。"}, {"id": "rs06", "c": "rs", "n": "06 复盘", "dir": "人生规划罗盘\\06-复盘", "file": "文稿笔记.md", "core": "复盘是向内的工具：从学习、工作、生活总结一天，吾日三省吾身，记下重要感悟，直接生成明天的计划；和晨间清单配合，早晚各一次。", "use": "今晚按每日卡写三行复盘。"}, {"id": "rs07", "c": "rs", "n": "07 执行", "dir": "人生规划罗盘\\07-执行", "file": "文稿笔记.md", "core": "执行拉垮是动力太小、阻力太大。提振靠想清意义、正面激励、2W2H 任务法、成就系统、社交系统、监督；能固化的一律固化，做不好就反思，别自责。", "use": "用 2W2H 写今天一件事：为什么做、具体什么动作、做到什么程度算完。"}, {"id": "rs08", "c": "rs", "n": "08 时间管理", "dir": "人生规划罗盘\\08-时间管理", "file": "文稿笔记.md", "core": "人对时间的感知有缺陷，先提高时间敏感度和时间价值意识（机会成本）。分清整块、碎片、暗时间；管住手机；忙的人可以花钱买时间、站在巨人肩膀上。", "use": "找出今天唯一一段整块时间，留给最要专注的事（比如对账）。"}, {"id": "rs09", "c": "rs", "n": "09 精力管理", "dir": "人生规划罗盘\\09-精力管理", "file": "文稿笔记.md", "core": "精力是时间管理的地基。精神能量 = 目标 × 动机；身体能量靠情绪、饮食、睡眠、小休、运动；按自己的精力周期排事情。", "use": "记一天自己脑子最清醒的时段，下周把最容易出错的活（付款、核对）放进去。"}, {"id": "rs10", "c": "rs", "n": "10 结营仪式", "dir": "人生规划罗盘\\10-结营仪式", "file": "文稿笔记.md", "core": "串讲全部模块：分块定向分解、统筹部署、复盘执行、时间和精力管理。成长没有捷径，盯住“因”，坚持复盘会显出威力。", "use": "看完只写一句：这套罗盘里我现在最用得上的是哪一块。"}, {"id": "zs01", "c": "zs", "n": "01 知识体系的理念", "dir": "知识体系训练营·第2期\\01-知识体系的理念", "file": "文稿笔记.md", "core": "知识体系就是大脑里的结构框架（图式）。有了框架，新知识会自动归位、更好记，用的时候能按问题类型快速调出来。", "use": "打开你的财务 AI 专用体系栏目，把今天学到的一句话挂到其中一个下面。"}, {"id": "zs02", "c": "zs", "n": "02 四大知识分类", "dir": "知识体系训练营·第2期\\02-四大知识分类", "file": "文稿笔记.md", "core": "知识分事实性、概念性、程序性、元认知四类。越往后越难学、迁移能力越强，元认知最值钱。", "use": "拆一件手上的活（比如银行承兑）：哪些是事实、哪些是流程、哪些是判断方法。"}, {"id": "zs03", "c": "zs", "n": "03 搭建通识体系", "dir": "知识体系训练营·第2期\\03-搭建通识体系", "file": "文稿笔记.md", "core": "通识体系像内功心法，以学为用、多元思维模型，靠泛读入门级好书建立学科脉络。", "use": "按你的原则暂缓：现在只留一句结论，不变成任务。"}, {"id": "zs04", "c": "zs", "n": "04 搭建专用体系", "dir": "知识体系训练营·第2期\\04-搭建专用体系", "file": "文稿笔记.md", "core": "专用体系以用为学，围绕刚需问题展开。两条原则：当下需求优先、兴趣第二；以主题为单位推进。", "use": "确认你的专用主题就是“家族企业财务 + AI 流程化”，划掉一个跟它无关的学习计划。"}, {"id": "zs05", "c": "zs", "n": "05 PBL 项目制学习法", "dir": "知识体系训练营·第2期\\05-PBL项目制学习法", "file": "文稿笔记.md", "core": "PBL 是问题导向或课题导向的学习，在解决真实问题中积累知识。六力模型：项目力、输入力、研究力、结构力、本质力、迭代力。", "use": "打开 `学习笔记\\02-PBL项目·多账户流水批量导出.md`，看 KR1 做到哪了。", "d": "在学"}, {"id": "zs06", "c": "zs", "n": "06 项目力", "dir": "知识体系训练营·第2期\\06-项目力", "file": "文稿笔记.md", "core": "用项目管理的思路统筹学习（刻舟求剑学习法、西蒙学习法、烧开水理论）。三步：明目标、制地图、上部署，分清主线和支线。", "use": "给流水导出项目画一张地图：主线是跑通一家银行，支线是文件命名规则。"}, {"id": "zs07", "c": "zs", "n": "07 输入力", "dir": "知识体系训练营·第2期\\07-输入力", "file": "文稿笔记.md", "core": "快速建立一个领域的基础认识：先搭最小可用框架，再做主题阅读。工具是问题树和黄金圈（是什么、为什么、怎么做）。", "use": "用黄金圈三问写影刀 RPA：它是什么、为什么能帮我、怎么上手。"}, {"id": "zs08", "c": "zs", "n": "08 研究力", "dir": "知识体系训练营·第2期\\08-研究力", "file": "文稿笔记.md", "core": "针对知识缺口做主题研究，整合不同观点，避免盲人摸象。五步：基础输入、召集大师、略读抓触点、精读炼触点、加工成模型。", "use": "研究“哪些银行网银能批量导出”：先找三个不同来源，对比差异。"}, {"id": "zs09", "c": "zs", "n": "09 结构力", "dir": "知识体系训练营·第2期\\09-结构力", "file": "文稿笔记.md", "core": "知识体系的本质是结构框架。树状最适合承载知识，网状是内化后的结果；可按元起点或主题、黄金圈嵌套、时空维度来分篮子。", "use": "把银行资料按“银行 → 账户 → 文件类型”做成三层树，就是 PBL 的 KR1 全景表。"}, {"id": "zs10", "c": "zs", "n": "10 本质力", "dir": "知识体系训练营·第2期\\10-本质力", "file": "文稿笔记.md", "core": "找第一原理，也就是事物的起点和根本问题。方法是归纳和演绎，演绎走“归零—解构—重构”。", "use": "问一句：每月导流水最终是为了什么（对账、报表）？再看哪一步可以省。"}, {"id": "zs11", "c": "zs", "n": "11 迭代力", "dir": "知识体系训练营·第2期\\11-迭代力", "file": "文稿笔记.md", "core": "体系要持续迭代：增（给知识点补多场景用法）、减（合并本质相同的）；显性知识要用成本能，隐性经验要写成方法。", "use": "把脑子里一条和银行打交道的经验，写成两行 SOP。"}, {"id": "zs12", "c": "zs", "n": "加餐1 如何实操 PBL", "dir": "知识体系训练营·第2期\\12-直播加餐1-如何实操PBL方法", "file": "课程原文.md", "core": "知识体系 = 要素（知识点）+ 要素间的逻辑。PBL 工作流从规划力开始：以终为始，想清动机、目标、要投入的时间、当下精力，再做输入和研究。", "use": "为流水项目回答四问：动机、要解决什么、要投入多少时间、我现在精力够不够。"}, {"id": "zs13", "c": "zs", "n": "加餐2 如何形成知识体系", "dir": "知识体系训练营·第2期\\13-直播加餐2-如何形成知识体系", "file": "课程原文.md", "core": "两种分类逻辑；用终极三问搭框架（以经济学、历史学示范）。体系背后串起来的是问题，不是关键词；PBL 也有边界。", "use": "把你的财务栏目各写成一个问题，比如“回单怎么做到不漏”。"}, {"id": "wn01", "c": "wn", "n": "01 外脑系统的理念", "dir": "外脑系统训练营\\01-外脑系统的理念", "file": "文稿笔记.md", "core": "外脑是用信息化工具替大脑记东西：解决遗忘、避免信息乱堆、把脑力留给思考（谷歌效应）、帮助创造。", "use": "脑子里记着的一件待办，写进收集箱，就不再记它。"}, {"id": "wn02", "c": "wn", "n": "02 外脑载体的选择", "dir": "外脑系统训练营\\02-外脑载体的选择", "file": "文稿笔记.md", "core": "电子笔记胜过纸质。公有云易用，私有云（Obsidian、思源）可定制；推荐“中枢 + 分支”组合，别陷进工具癖。", "use": "定下你的中枢是哪一个，其他工具只当分支。"}, {"id": "wn03", "c": "wn", "n": "03 安装外脑操作系统", "dir": "外脑系统训练营\\03-安装外脑操作系统", "file": "文稿笔记.md", "core": "根目录要覆盖全部场景、一次定好，避免交叉、割裂、过多（5–9 个为宜）。借用 GTD：收集箱、等待处理、将来可能、归档。", "use": "数一数档案盘的顶层文件夹，超过 9 个就记下来，周五再处理。"}, {"id": "wn04", "c": "wn", "n": "04 输入的逻辑", "dir": "外脑系统训练营\\04-输入的逻辑", "file": "文稿笔记.md", "core": "用收集箱中转，输入和整理分开。只收能改变你认知或行为的“触点”，提炼精华不全文复制，定期清空。", "use": "今天只往收集箱放一条，写一句“它能改变我哪个动作”。"}, {"id": "wn05", "c": "wn", "n": "05 加工的逻辑", "dir": "外脑系统训练营\\05-加工的逻辑", "file": "文稿笔记.md", "core": "信息要加工才变成知识（DIKW）。用卢曼卡片笔记法，一张卡一个知识点；按价值分级加工，经验类内容可用 ORID。", "use": "把今天一个工作经验做成一张卡：发生了什么、我怎么处理、下次怎么做。"}, {"id": "wn06", "c": "wn", "n": "06 体系化管理的逻辑", "dir": "外脑系统训练营\\06-体系化管理的逻辑", "file": "文稿笔记.md", "core": "以主题为导向、以整合为手段、以流动为准则、以产品为结果，把卡片整合进体系。", "use": "把一张卡挂到“银行贷后资料”主题下。"}, {"id": "wn07", "c": "wn", "n": "07 非体系管理的逻辑", "dir": "外脑系统训练营\\07-非体系管理的逻辑", "file": "文稿笔记.md", "core": "素材库（表达素材、案例）不用强行分类，粗分类加标签、双链让它自然归纳。", "use": "建一个“财务案例素材”粗分类，今天的烦心事写一句放进去。"}, {"id": "wn08", "c": "wn", "n": "08 索引之搜索系统", "dir": "外脑系统训练营\\08-索引之搜索系统", "file": "文稿笔记.md", "core": "搜索好不好用取决于命名规范。用命名万能公式，做到不打开文件就知道里面是什么。", "use": "给今天导出的流水或回单按统一规则命名一次，比如 银行_账户_月份_类型。"}, {"id": "wn09", "c": "wn", "n": "09 索引之标签系统", "dir": "外脑系统训练营\\09-索引之标签系统", "file": "文稿笔记.md", "core": "标签补上搜索只认关键词、文件夹只能放一处的短板。六类标签：主题、类别、状态、项目、任务、兴趣，再加来源标签，统一前缀。", "use": "只建一个 `#项目/流水导出` 标签，先用起来（你的原则：不追求完美标签）。"}, {"id": "wn10", "c": "wn", "n": "10 索引之双链系统", "dir": "外脑系统训练营\\10-索引之双链系统", "file": "文稿笔记.md", "core": "双向链接和块引用适合关联和随手复习；但引用关系不等于逻辑关系，树状结构仍是体系主干。", "use": "按你的原则可以先跳过，只记一句：树状是主干，双链是辅助。"}, {"id": "wn11", "c": "wn", "n": "11 索引之中控系统", "dir": "外脑系统训练营\\11-索引之中控系统", "file": "文稿笔记.md", "core": "中控台把常用内容聚到一页，少翻层级。四种用法：常用工作台、标签导航、主题汇总、知识库导航。", "use": "做你档案里那个待办：一个叫“今天答一道题”的桌面快捷方式。"}, {"id": "wn12", "c": "wn", "n": "12 迭代的逻辑", "dir": "外脑系统训练营\\12-迭代的逻辑", "file": "文稿笔记.md", "core": "外脑要维护：清理（每周清空收集箱）、更新（增减）、回顾（专题式、随机漫步，按重要紧急定频率）、挪移（处理历史堆积）。", "use": "周五花 10 分钟清空一次收集箱。"}, {"id": "wn13", "c": "wn", "n": "13 项目管理的逻辑", "dir": "外脑系统训练营\\13-项目管理的逻辑", "file": "文稿笔记.md", "core": "用外脑管人生项目：以年为单位规划，用五维度（年季月周日）统筹，再执行。", "use": "在外脑里建一个流水导出项目页，放 KR 和进度节点。"}, {"id": "wn14", "c": "wn", "n": "14 文件管理的逻辑", "dir": "外脑系统训练营\\14-文件管理的逻辑", "file": "文稿笔记.md", "core": "本地文件只要解决存和找：粗分类架构、桌面中控台、标准化命名（项目名_版本_日期），媒体文件按要素命名。", "use": "定一条回单、流水的文件命名规则写进档案，就是 PBL 的 KR5。"}, {"id": "wn15", "c": "wn", "n": "15 信息管理的逻辑", "dir": "外脑系统训练营\\15-信息管理的逻辑", "file": "文稿笔记.md", "core": "生活琐碎信息也有价值。能自动记就自动记，集中记录；静态信息粗文件夹加标签，动态信息用表格中控台；循序渐进别贪多。", "use": "把银行联系人、账户、还款日这类会变的信息放进一张表。"}, {"id": "wn16", "c": "wn", "n": "16 外脑的大一统", "dir": "外脑系统训练营\\16-外脑的大一统", "file": "文稿笔记.md", "core": "把外脑方法论串成公式；本地部署要解决同步和备份（3-2-1 备份法则）；方法只有用起来才有效。", "use": "检查一次：你的档案和课程资料有没有第二份备份。"}, {"id": "zy01", "c": "zy", "n": "01 职业规划的理念", "dir": "职业规划系统\\01-职业规划的理念", "file": "文稿笔记.md", "core": "很多人迷茫源于普鲁士式教育。职业规划三级火箭：探索期 → 深耕期 → 发展期，路径因人而异，每一阶段都不简单。", "use": "写一句：我现在在哪一级、为什么。"}, {"id": "zy02", "c": "zy", "n": "02 探索期的逻辑", "dir": "职业规划系统\\02-探索期的逻辑", "file": "课程原文.md", "core": "（这课 AI 笔记很短，按课程原文）探索期是进职场头三年，解决生存和找方向：知己（如 SIGN 模型）、知彼（行业、岗位），实操讲感受原则和多量原则。", "use": "写两条：财务 + AI 这个方向里，我喜欢的一点、我擅长的一点。"}, {"id": "zy03", "c": "zy", "n": "03 深耕期的逻辑", "dir": "职业规划系统\\03-深耕期的逻辑", "file": "文稿笔记.md", "core": "按性格、兴趣、价值观选定领域长期积累，深耕经验专业、资源人脉、可迁移能力；在岗的人就在岗位上深耕。", "use": "列出工作里一项可迁移能力（如银行对接、Excel 模板），写一个可展示案例的题目。"}, {"id": "zy04", "c": "zy", "n": "04 发展期的逻辑", "dir": "职业规划系统\\04-发展期的逻辑", "file": "文稿笔记.md", "core": "主业到瓶颈前就要布局第二曲线。收入四支柱：主业、副业、投资、资产（健康、认知、影响力）；主业可纵向晋升或横向叠加能力。", "use": "写一句：AI 流程化能力加可展示案例，就是我在攒的“资产收入”。"}, {"id": "zy05", "c": "zy", "n": "05 执行的注意事项", "dir": "职业规划系统\\05-执行的注意事项", "file": "文稿笔记.md", "core": "执行会遇到三类障碍：方法（循序渐进）、心态（慢反馈，要有成长性思维和精神助推）、时间（提高效率、主动避开不必要的麻烦事）。", "use": "列一件不归你管却总落到你身上的麻烦事，想一句交还或拒绝的话。"}, {"id": "zt-lj1", "c": "zt", "n": "逻辑 01 认识逻辑思维", "dir": "逻辑思维专题课\\01-认识逻辑思维", "file": "课程原文.md", "core": "从“孤岛宝藏”（诚实者和说谎者）的谜题讲起，讲清什么是逻辑、什么是逻辑思维、为什么值得学。", "use": "读完用一句话写：逻辑思维和“感觉对”差在哪。"}, {"id": "zt-lj2", "c": "zt", "n": "逻辑 02 方法篇", "dir": "逻辑思维专题课\\02-逻辑思维（方法篇）", "file": "课程原文.md", "core": "三步：明确概念、提取命题、逻辑推演；推演有演绎、归纳、溯因三种。", "use": "银行说“资料不齐”，先问清“不齐”具体指哪几份（明确概念）。"}, {"id": "zt-lj3", "c": "zt", "n": "逻辑 03 运用篇", "dir": "逻辑思维专题课\\03-逻辑思维（运用篇）", "file": "课程原文.md", "core": "用咖啡店“生意不太好”的案例走一遍：明确概念 → 提取命题 → 三种推理找真相、定策略。", "use": "有人说“这个月账不对”时，先问清“不对”指的是什么。"}, {"id": "zt-lj4", "c": "zt", "n": "逻辑 04 注意事项", "dir": "逻辑思维专题课\\04-逻辑思维的注意事项", "file": "课程原文.md", "core": "演绎要看前提可靠、结构有效；归纳要看样本数量质量和因果；溯因要多列几个解释再检验。", "use": "一笔对不上的账，先列三个可能原因，再逐个查。"}, {"id": "zt-xt1", "c": "zt", "n": "系统 01 认识系统思维", "dir": "系统思维专题课\\01-认识系统思维", "file": "课程原文.md", "core": "眼镜蛇悬赏越治越多，说明真实世界是非线性的。系统 = 要素 + 关联 + 目的 + 环境；系统思维是环形思考、看结构、看变化、看全局。", "use": "想一个“越补越乱”的工作问题，画出它的循环。"}, {"id": "zt-xt2", "c": "zt", "n": "系统 02 如何掌握", "dir": "系统思维专题课\\02-如何掌握系统思维？", "file": "课程原文.md", "core": "意识层：遇到很顺直觉的答案，先想“恐怕没那么简单”。方法层六步：定边界、找要素、理因果、找反馈回路、找杠杆解、出系统方案。", "use": "对“月底总加班”按六步写出要素和一个杠杆点。"}, {"id": "zt-xt3", "c": "zt", "n": "系统 03 注意事项", "dir": "系统思维专题课\\03-系统思维的注意事项", "file": "课程原文.md", "core": "四个局限：边界难定、认知偏差、分析成本高、从看懂到行动有阻力。对策：以终为始从小系统开始、引入多元视角、和线性思维互补并画图、分析利益相关方。", "use": "推一个流程改动前，先列出会受影响的人。"}, {"id": "zt-dy0", "c": "zt", "n": "第一性 00 导言", "dir": "第一性原理专题课\\00-导言", "file": "课程原文.md", "core": "用“电梯太慢、又没预算换”的案例引入：别在原方案上修修补补，回到问题本身。", "use": "找一个你工作里的“慢电梯”问题。"}, {"id": "zt-dy1", "c": "zt", "n": "第一性 01 核心知识", "dir": "第一性原理专题课\\01-第一性原理【核心知识】", "file": "课程原文.md", "core": "笛卡尔三步：归零（用 5Why 找本质）、解构（用公式思维找要素和卡点）、重构（按要素关系出新方案）。", "use": "对“导流水太耗时”连问 5 个为什么。"}, {"id": "zt-dy2", "c": "zt", "n": "第一性 02 扩展用法", "dir": "第一性原理专题课\\02-第一性原理【扩展用法】", "file": "课程原文.md", "core": "把第一性原理迁移到历史、学一项新技能、个人财务管理等日常场景。", "use": "用归零—解构—重构看一次自己的钱怎么管。"}, {"id": "zt-dy3", "c": "zt", "n": "第一性 03 适用边界", "dir": "第一性原理专题课\\03-第一性原理【适用边界】", "file": "课程原文.md", "core": "五个局限：耗时耗资源、依赖专业知识、不适合主观感性问题、可能把复杂系统简化过头、执行难。", "use": "紧急付款这种要快决定的事，不用第一性原理，按清单走。"}, {"id": "sj01", "c": "sj", "n": "10 招时间整理术", "dir": "赠送资料：你一定要学的时间管理书\\10招精通超级时间整理术", "file": "文稿笔记.md", "core": "十招：零散时间法、日程表法（番茄钟）、重点关注法、转化法、奖励法、合作法、效率法、因人制宜法、约束法、反问法。", "use": "用一个 25 分钟番茄钟做今天最难的那件事。"}];
+var EPISODES={"zx01": {"id": "zx01", "ep": "第 1 集", "title": "方法都学了，为什么还是乱？", "scenes": [{"place": "周一 8:40 · 财务室", "who": "旁白", "line": "燕美打开电脑，显示器边上贴满便利贴：贷后资料、回单、工资表、承兑到期。"}, {"place": "8:52 · 电话响了", "who": "银行客户经理", "line": "燕美姐，上次说的贷后资料，这周五前要交齐哦。"}, {"place": "9:10", "who": "燕美（心里）", "line": "我学过时间管理，下过番茄钟，画过四象限，还看了好多“高效习惯”……"}, {"place": "10:30 · 又一通电话", "who": "供应商", "line": "上周那笔货款什么时候能付？我们这边也等着对账。"}, {"place": "11:00", "who": "旁白", "line": "她又打开一篇“自律的 10 个方法”。热血了十分钟，被下一件急事打断。"}, {"place": "17:30 · 下班前", "who": "旁白", "line": "贷后资料只理了一半。便利贴还在，一张都没撕下来。"}], "cliff": "燕美盯着便利贴：是不是我就是不够自律？", "teacher": ["那些方法大多没有问题，都经过很多人实践验证。问题不在方法。", "执行是一个系统问题，系统问题要用系统去解决。头疼医头、脚疼医脚不行：鸡汤和故事能短期提振，长期稳定要从多个因素一起干预。", "影响执行的因素很多：环境、自己的意识、心情、身体状态、计划安排、时间和精力策略、身边的人、当下的事，甚至一个念头。", "所以要搭自己的执行力系统，底层是王阳明的“知行合一”：知 = 觉知，能随时监控、识别、干预自己的行为；行 = 让行为持续、稳定发生的各种策略。"], "source": "执行力系统课程 · 01 执行理念（文稿笔记、课程原文）", "after": [{"place": "17:40", "who": "燕美", "line": "不是我不自律，是我还没有一套自己的执行系统。"}, {"place": "17:42", "who": "旁白", "line": "她撕下一张便利贴，在背面写：今天打断我的是什么？明天先写这个。"}], "quiz": [{"q": "学了很多自我管理方法，执行还是不稳定。按这一课，主要原因是什么？", "options": ["那些方法本身是错的", "执行是一个系统问题，单靠某一个方法解决不了", "人天生懒，没办法", "学的方法还不够多"], "answer": 1, "why": "老师说这些方法“基本上都是没有问题的”，只是持久度和稳定性因人而异；执行是系统问题，要用系统去解决。"}, {"q": "执行力系统里的“知”和“行”分别指什么？", "options": ["知 = 懂得多，行 = 做得多", "知 = 做计划，行 = 每天打卡", "知 = 觉知，能监控、识别、干预自己的行为；行 = 让行为持续稳定发生的策略", "知 = 听课，行 = 写笔记"], "answer": 2, "why": "课程原文：知指觉知，让我们有能力随时对行为作出监控、识别和干预；行指让行为发生的各种策略和方法。"}, {"q": "“头疼医头、脚疼医脚”在这一课里提醒我们什么？", "options": ["多看励志故事就能长期保持执行力", "找到一个最好的方法，坚持用就够了", "短期可以靠激励缓解，长期稳定要从多个因素一起调整和干预"], "answer": 2, "why": "笔记原话：短期执行力提振可通过激励方法实现，长期执行稳定需多维度干预。"}], "task": "拿一件这周一直拖着的活（比如贷后资料），写下今天打断它的 3 个因素，再写一个你已经在用的应对办法。", "taskHint": "因素可以从这些里挑：环境、心情、身体状态、计划安排、身边的人、突发的事、一个念头。10 分钟，写在收集箱就行。"}, "zx02": {"id": "zx02", "ep": "第 2 集", "title": "第三次放下的那个计划", "scenes": [{"place": "三月 · 某个晚上", "who": "旁白", "line": "燕美刷到同行分享：几十个账户的流水，一键就导出来了。她很羡慕，收藏了教程。"}, {"place": "两天后", "who": "旁白", "line": "教程还在收藏夹里。没人催，也不影响今天的活。"}, {"place": "月底 · 22:00", "who": "旁白", "line": "一个个登网银、选日期、点导出。对账时还错了一笔，返工到深夜。"}, {"place": "22:30", "who": "燕美", "line": "受够了。这次一定要把自动导出学会！"}, {"place": "接下来两晚", "who": "旁白", "line": "装插件、学 RPA，卡在一家银行强制跳浏览器那一步。试了好几次，看不到进展，越弄越烦。"}, {"place": "月初", "who": "旁白", "line": "新的一月忙起来，那晚的难受慢慢淡了。教程又躺回收藏夹。"}], "cliff": "这已经是第三次了。为什么每次都是：热血、卡住、放下？", "teacher": ["福格行为模型：行为要改变，需要动机、能力、提示三样，缺一不可。老师把它叫“改变三角”。", "只是羡慕别人，是“兴趣”念头：有它更好，没有也过得下去，呼之即来、挥之即去。被痛点刺激到，才会变成“刚需”。", "有了刚需，可任务比想象难、看不到正面反馈，信心就会动摇，这是能力不足带来的慢反馈。", "痛苦被时间冲淡、没有持续的提示，热情就散了，这是触发机制不足导致的后劲不足。三样合起来，就是“间歇性凌云壮志，持续性混吃等死”。", "三个角各配一套系统：动力系统管动机，提示系统管持续提醒，任务系统管能力和任务大小。"], "source": "执行力系统课程 · 02 执行原理（文稿笔记、课程原文）", "after": [{"place": "第二天早上", "who": "燕美", "line": "动机：月底熬夜，是刚需，有了。能力：一上来就想全部自动化，切太大了。提示：零，没人提醒。"}, {"place": "8:45", "who": "燕美", "line": "原来不是我不行，是三角缺了两个角。先补一个最小的。"}], "quiz": [{"q": "福格行为模型（改变三角）的三个要素是？", "options": ["目标、计划、复盘", "动机、能力、提示", "时间、精力、注意力", "知识、技能、态度"], "answer": 1, "why": "课程原文：行为动机（Motivation）、行为能力（Ability）、提示触发机制（Triggers），三者缺一不可。"}, {"q": "看到同行一键导流水很羡慕，就想学。按课程，这种动机属于？", "options": ["刚需，一定能坚持", "兴趣念头：有它更好、没有也过得下去，容易挥之即去", "已经是执念了"], "answer": 1, "why": "老师用“看别人弹钢琴很优雅也想学”举例：这只是承载美好期望的兴趣念头，是非常微弱的动机。"}, {"q": "痛下决心开始学，却卡在一步、看不到进展，于是开始动摇。三角里哪个角出了问题？", "options": ["动机", "能力：任务比想象难，没有正面反馈", "提示"], "answer": 1, "why": "课程原文：做这件事比想象中困难得多，又收不到正面反馈，执行信心就会动摇，这是行为能力不足带来的慢反馈。"}], "task": "拿本月一件“计划了没做到”的事，给动机、能力、提示各打 1 到 5 分，写下最弱那一角的一个小改法。", "taskHint": "比如：能力弱，就把“全部自动化”改成“这周只跑通一家银行的一种文件”；提示弱，就设一个固定提醒。10 分钟。"}};
+var RANKS=[{"min": 0, "name": "实习出纳"}, {"min": 1, "name": "新手出纳"}, {"min": 3, "name": "熟练出纳"}, {"min": 6, "name": "执行力小能手"}, {"min": 15, "name": "靠谱财务"}, {"min": 30, "name": "流程达人"}, {"min": 60, "name": "财务 AI 能手"}, {"min": 120, "name": "系统型高手"}];
+var EMPTY={story:false,quiz:false,task:false};
+function starsOf(p){return p?(p.story?1:0)+(p.quiz?1:0)+(p.task?1:0):0;}
+
+var STATUSES=["未开始","在学","学完","已用上"];
+var KEY="changqing-tracker-v1", GAME_KEY="changqing-game-v1", MUTE_KEY="changqing-mute-v1";
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
+function rd(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
+function wr(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+var canSave=true;try{localStorage.setItem("changqing-probe","1")}catch(e){canSave=false}
+var game=rd(GAME_KEY)||{};
+var lessonSt={};LESSONS.forEach(function(l){lessonSt[l.id]=l.d||"未开始"});
+var savedSt=rd(KEY);if(savedSt)for(var k in savedSt)lessonSt[k]=savedSt[k];
+var S={tab:"game",level:null,phase:"story",si:0,ai:0,picks:[],course:"zx",started:false};
+var ORDER=STATUSES;
+function raise(id,v){if(ORDER.indexOf(lessonSt[id])<ORDER.indexOf(v)){lessonSt[id]=v;wr(KEY,lessonSt)}}
+function mark(id,k){var p=game[id]||{story:false,quiz:false,task:false};if(p[k])return;p[k]=true;game[id]=p;wr(GAME_KEY,game);
+  raise(id,k==="task"?"已用上":k==="quiz"?"学完":"在学");toast("获得 1 颗星 ★",true)}
+function toast(t,star){var e=document.getElementById("toast");e.innerHTML=star?'<span class="star-pop">★</span> '+esc(t):esc(t);e.classList.add("on");clearTimeout(e._t);e._t=setTimeout(function(){e.classList.remove("on")},1800)}
+function stars(n,big){var s="";for(var i=0;i<3;i++)s+=i<n?'<span class="gold">★</span>':'<span class="st0">☆</span>';return '<span style="font-size:'+(big?20:12)+'px;letter-spacing:2px">'+s+'</span>'}
+function total(){var t=0;for(var k in game)t+=starsOf(game[k]);return t}
+var BUILT=LESSONS.filter(function(l){return EPISODES[l.id]}).map(function(l){return l.id});
+function unlocked(id){var i=BUILT.indexOf(id);if(i<0)return false;if(i===0)return true;return starsOf(game[BUILT[i-1]])>=1}
+function whoAv(w){if(w==="燕美")return "ym";if(w==="旁白")return "nb";if(w.indexOf("老师")>=0)return "ls";return "qt"}
+
+/* ===== BGM via Web Audio (synthesized ambient, no files) ===== */
+var AudioCtx=window.AudioContext||window.webkitAudioContext;
+var actx=null, master=null, muted=rd(MUTE_KEY); if(muted==null) muted=true;
+var bgmTimer=null, bgmOn=false;
+function ensureAudio(){if(!actx){actx=new AudioCtx();master=actx.createGain();master.gain.value=muted?0:0.07;master.connect(actx.destination)}
+  if(actx.state==="suspended")actx.resume()}
+function tone(freq,t0,dur,type,gain){
+  var o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
+  o.type=type||"sine";o.frequency.value=freq;
+  f.type="lowpass";f.frequency.value=1200;
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(gain||0.04,t0+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(f);f.connect(g);g.connect(master);
+  o.start(t0);o.stop(t0+dur+0.05);
+}
+function chord(freqs,t0,dur){freqs.forEach(function(f,i){tone(f,t0+i*0.02,dur,"sine",0.03);tone(f*2,t0+i*0.02,dur*0.8,"triangle",0.012)})}
+function scheduleBgm(){
+  if(!actx||muted)return;
+  var t=actx.currentTime+0.05;
+  // soft ambient pad progression (Cmaj-ish / Am feel), looping every ~8s
+  var prog=[[261.63,329.63,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63],[196.00,246.94,293.66]];
+  prog.forEach(function(ch,i){chord(ch,t+i*2.0,2.4)});
+  // gentle high sparkles
+  [523.25,659.25,784.00,698.46].forEach(function(f,i){tone(f,t+0.5+i*2.0,1.2,"sine",0.015)});
+}
+function startBgm(){ensureAudio();bgmOn=true;if(bgmTimer)clearInterval(bgmTimer);scheduleBgm();bgmTimer=setInterval(scheduleBgm,8000);syncMuteBtn()}
+function stopBgm(){bgmOn=false;if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function setMuted(m){muted=!!m;wr(MUTE_KEY,muted);if(master)master.gain.setTargetAtTime(muted?0:0.07,actx?actx.currentTime:0,0.05);syncMuteBtn();if(!muted&&S.started)startBgm()}
+function syncMuteBtn(){var b=document.getElementById("muteBtn");if(!b)return;b.textContent=muted?"🔇":"🔊";b.classList.toggle("on",!muted)}
+function unlockAndMaybeMusic(withMusic){S.started=true;document.getElementById("gate").classList.add("hidden");
+  if(withMusic){setMuted(false);startBgm()}else{setMuted(true)} render()}
+
+document.getElementById("startBtn").onclick=function(){unlockAndMaybeMusic(true)};
+document.getElementById("startMuted").onclick=function(){unlockAndMaybeMusic(false)};
+document.getElementById("muteBtn").onclick=function(){if(!S.started)return;ensureAudio();setMuted(!muted);if(!muted)startBgm()};
+
+function renderMap(){
+  var st=total(),idx=0;RANKS.forEach(function(r,i){if(st>=r.min)idx=i});var cur=RANKS[idx],nx=RANKS[idx+1];
+  var pct=nx?Math.max(4,Math.round((st-cur.min)/(nx.min-cur.min)*100)):100;
+  var cleared=BUILT.filter(function(id){return starsOf(game[id])>=1}).length;
+  var next=LESSONS.find(function(l){return EPISODES[l.id]&&starsOf(game[l.id])<3});
+  var h='<div class="card rank-card"><div class="rank"><div><div class="muted">当前称号</div><div class="name">'+esc(cur.name)+'</div></div><div style="text-align:right"><div class="stars">★ '+st+'</div><div class="muted">已通关 '+cleared+' · 上线 '+BUILT.length+' 关</div></div></div>'+
+    '<div class="bar"><i style="width:'+pct+'%"></i></div><div class="muted">'+(nx?'再拿 '+(nx.min-st)+' 颗星 → 「'+esc(nx.name)+'」':'已经是最高称号')+'</div>'+
+    (next?'<div class="row"><button class="btn pri full" data-open="'+next.id+'">▶ 继续闯关：'+esc(next.n)+'</button></div>':'')+'</div>';
+  h+='<div class="card"><b>怎么玩</b><p class="muted" style="margin:6px 0 0">每关是一集短剧。看到悬念时请老师出招，再答 3 道题、做一个 10 分钟现实任务。看完剧情 / 答题全对 / 做完任务各得 ★，过一关解锁下一关。</p>'+(canSave?'':'<p class="fb"><b class="no">注意：</b>当前打开方式不能保存进度。</p>')+'</div>';
+  h+='<div class="card"><b>关卡地图</b><div class="muted" style="margin-bottom:8px">沿推荐顺序前进 · 执行力 01、02 已上线</div>';
+  var n=0;
+  COURSES.forEach(function(c){
+    var ls=LESSONS.filter(function(l){return l.c===c.key});
+    if(!ls.length)return;
+    h+='<div class="course">'+esc(c.name)+'</div><div class="map"><div class="map-path"></div>';
+    ls.forEach(function(l){
+      n++;var built=!!EPISODES[l.id],open=built&&unlocked(l.id),s=starsOf(game[l.id]);
+      var cls="lv"+(open?" open":"")+(s>=1?" clear":"");
+      var sub=built?(open?(s>=3?"三星通关":s>=1?"继续拿星":"可以进入"):"先过上一关"):"即将上线";
+      h+='<div class="lv-row"><button class="'+cls+'" '+(open?'data-open="'+l.id+'"':'')+' aria-label="'+esc(l.n)+'"><div class="c">'+(s>=3?"★":n)+'</div><div class="meta"><div class="t">'+esc(l.n)+'</div>'+(built?'<div class="s">'+stars(s)+'</div>':'')+'<div class="sub">'+sub+'</div></div></button></div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="row"><button class="btn" id="resetGame">清空闯关记录</button></div></div>';
+  return h;
+}
+
+function sceneCard(s,i,t,mode){
+  var n=s.who==="旁白";
+  return '<div class="stage '+(mode||'')+'"><div class="meta"><span>'+esc(s.place||"")+'</span><span>第 '+(i+1)+' / '+t+' 幕</span></div>'+
+    '<div class="plate"><div class="av '+whoAv(s.who)+'">'+esc(s.who.slice(0,1))+'</div><div class="nm">'+esc(s.who)+'</div></div>'+
+    '<div class="line'+(n?' n':'')+'">'+(n?esc(s.line):'“'+esc(s.line)+'”')+'</div></div>';
+}
+function dots(t,a){var h='<div class="dots">';for(var i=0;i<t;i++)h+='<i class="'+(i<=a?'on':'')+'"></i>';return h+'</div>'}
+
+function renderPlayer(){
+  var ep=EPISODES[S.level],prog=game[ep.id]||EMPTY;
+  var ph=["story","cliff","teacher","after","quiz","task"],lb=["剧情","悬念","老师出招","结局","答题","现实任务"];
+  var doneSteps=(prog.story?1:0)+(prog.quiz?1:0)+(prog.task?1:0);
+  var h='<div class="muted">'+esc(ep.ep)+' · 执行力系统课程</div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h1 class="ep">'+esc(ep.title)+'</h1>'+stars(starsOf(prog),true)+'</div>';
+  h+='<div class="xp"><i style="width:'+(doneSteps/3*100)+'%"></i></div>';
+  h+='<div class="phases">'+ph.map(function(p,i){return '<span class="'+(p===S.phase?'on':'')+'">'+lb[i]+'</span>'}).join("")+'</div>';
+  if(S.phase==="story"){h+=dots(ep.scenes.length,S.si)+sceneCard(ep.scenes[S.si],S.si,ep.scenes.length)+'<div class="row">'+(S.si>0?'<button class="btn" data-act="prev">上一幕</button>':'')+
+    (S.si<ep.scenes.length-1?'<button class="btn pri" data-act="next" style="flex:1">下一幕 ▶</button>':'<button class="btn pri" data-act="toCliff" style="flex:1">进入悬念 ▶</button>')+'</div>'}
+  if(S.phase==="cliff"){h+='<div class="stage cliff"><div class="muted" style="text-align:center">本集悬念</div><div class="cliff-txt">'+esc(ep.cliff)+'</div></div><div class="row"><button class="btn" data-act="back2story">回看剧情</button><button class="btn gold" data-act="toTeacher" style="flex:1">✨ 请老师出招</button></div>'}
+  if(S.phase==="teacher"){h+='<div class="stage teacher"><div class="tag">常青老师出招 · '+(S.ai+1)+' / '+ep.teacher.length+'</div>'+dots(ep.teacher.length,S.ai)+
+    '<div class="plate"><div class="av ls">师</div><div class="nm">常青老师</div></div><div class="line">'+esc(ep.teacher[S.ai])+'</div><div class="muted" style="margin-top:8px">出自：'+esc(ep.source)+'</div></div><div class="row">'+
+    (S.ai>0?'<button class="btn" data-act="tprev">上一招</button>':'')+(S.ai<ep.teacher.length-1?'<button class="btn pri" data-act="tnext" style="flex:1">下一招 ▶</button>':'<button class="btn pri" data-act="toAfter" style="flex:1">看结局 ▶</button>')+'</div>'}
+  if(S.phase==="after"){h+=dots(ep.after.length,S.si)+sceneCard(ep.after[S.si],S.si,ep.after.length)+'<div class="row">'+
+    (S.si<ep.after.length-1?'<button class="btn pri" data-act="anext" style="flex:1">下一幕 ▶</button>':'<button class="btn gold" data-act="toQuiz" style="flex:1">答题拿星 ▶</button>')+'</div>'}
+  if(S.phase==="quiz"){var all=true;
+    ep.quiz.forEach(function(q,qi){var p=S.picks[qi];if(p!==q.answer)all=false;
+      h+='<div class="card"><div class="muted">第 '+(qi+1)+' 题</div><div style="font-weight:700;margin-top:4px">'+esc(q.q)+'</div>';
+      q.options.forEach(function(o,oi){var c=p===oi?(oi===q.answer?' right':' wrong'):'';h+='<button class="opt'+c+'" data-q="'+qi+'" data-o="'+oi+'">'+String.fromCharCode(65+oi)+'. '+esc(o)+'</button>'});
+      if(p!=null)h+='<div class="fb">'+(p===q.answer?'<b class="ok">答对了。</b> '+esc(q.why):'<b class="no">再想想，可以重选。</b>')+'</div>';
+      h+='</div>'});
+    h+='<div class="row"><button class="btn pri full" data-act="toTask">'+(all?'全对！去做现实任务 ▶':'先去做现实任务 ▶')+'</button></div>'}
+  if(S.phase==="task"){h+='<div class="card"><div class="tag">现实任务 · 基础版 10 分钟</div><div class="line" style="margin-top:10px;font-size:17px">'+esc(ep.task)+'</div><p class="muted">'+esc(ep.taskHint)+'</p><div class="row">'+
+    (prog.task?'<span class="done">已完成，第 3 颗星到手。</span>':'<button class="btn gold" data-act="taskDone" style="flex:1">我做完了 ★</button>')+'</div><p class="muted">星星规则：看完剧情 1 ★ · 答题全对 1 ★ · 现实任务 1 ★</p></div>'}
+  h+='<div class="row"><button class="btn full" data-act="map">← 回到地图</button></div>';
+  return h;
+}
+
+function renderTracker(){
+  var h='<div class="card"><b>课程进度</b><div class="muted">“学完”和“已用上”都算；闯关拿星会自动往前推</div>';
+  COURSES.forEach(function(c){var ls=LESSONS.filter(function(l){return l.c===c.key});var d=ls.filter(function(l){return lessonSt[l.id]==="学完"||lessonSt[l.id]==="已用上"}).length;var p=Math.round(d/ls.length*100);
+    h+='<div class="pb"><span class="l">'+esc(c.short)+'</span><div class="bar"><i style="width:'+p+'%"></i></div><span class="v">'+d+'/'+ls.length+'</span></div>'});
+  h+='</div><div class="chips">'+COURSES.map(function(c){return '<button class="chip'+(S.course===c.key?' on':'')+'" data-course="'+c.key+'">'+esc(c.short)+'</button>'}).join("")+'</div>';
+  LESSONS.filter(function(l){return l.c===S.course}).forEach(function(l){
+    h+='<div class="card les"><h3>'+esc(l.n)+'</h3><p><span class="k">核心</span>'+esc(l.core)+'</p><p><span class="k">今天怎么用一次</span>'+esc(l.use)+'</p><div class="path">'+esc(ROOT+l.dir+"\\"+l.file)+'</div><select data-st="'+l.id+'">'+STATUSES.map(function(s){return '<option'+(lessonSt[l.id]===s?' selected':'')+'>'+s+'</option>'}).join("")+'</select></div>'});
+  return h;
+}
+
+function render(){
+  if(!S.started)return;
+  document.querySelectorAll(".tab").forEach(function(b){b.classList.toggle("on",b.dataset.tab===S.tab)});
+  document.getElementById("app").innerHTML=S.tab==="tracker"?renderTracker():(S.level?renderPlayer():renderMap());
+  syncMuteBtn();
+}
+function go(f){f();render();window.scrollTo(0,0)}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;
+  if(t.dataset.tab){go(function(){S.tab=t.dataset.tab});return}
+  if(t.dataset.open){var id=t.dataset.open;go(function(){S.level=id;S.phase="story";S.si=0;S.ai=0;S.picks=[];raise(id,"在学")});return}
+  if(t.dataset.course){go(function(){S.course=t.dataset.course});return}
+  if(t.id==="resetGame"){if(confirm("确定清空所有星星吗？")){game={};wr(GAME_KEY,game);render()}return}
+  if(t.dataset.q!=null){var qi=+t.dataset.q,oi=+t.dataset.o,ep=EPISODES[S.level];S.picks[qi]=oi;
+    if(ep.quiz.every(function(q,i){return S.picks[i]===q.answer}))mark(ep.id,"quiz");render();return}
+  var a=t.dataset.act,ep2=S.level&&EPISODES[S.level];
+  var A={prev:function(){S.si--},next:function(){S.si++},toCliff:function(){S.phase="cliff"},back2story:function(){S.phase="story";S.si=ep2.scenes.length-1},
+    toTeacher:function(){S.phase="teacher";S.ai=0},tprev:function(){S.ai--},tnext:function(){S.ai++},toAfter:function(){S.phase="after";S.si=0},anext:function(){S.si++},
+    toQuiz:function(){mark(ep2.id,"story");S.phase="quiz"},toTask:function(){S.phase="task"},taskDone:function(){mark(ep2.id,"task")},map:function(){S.level=null}};
+  if(A[a])go(A[a]);
+});
+document.addEventListener("change",function(e){var s=e.target;if(s.dataset&&s.dataset.st){lessonSt[s.dataset.st]=s.value;wr(KEY,lessonSt);render()}});
+syncMuteBtn();
+</script>
+</body>
+</html>
