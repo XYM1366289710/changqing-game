@@ -1,0 +1,2 @@
+All audio files in this folder are CC0 from OpenGameArt.org.
+See tracks.json for per-track source URLs.

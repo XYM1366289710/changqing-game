@@ -165,6 +165,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .xp{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:8px 0 0}
 .xp>i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));width:0;transition:width .35s}
 h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
+
+.music-panel{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);text-align:left}
+.music-panel .ml{font-size:11px;color:var(--ink3);font-weight:700;margin-bottom:6px}
+.music-panel select{width:100%;font-size:13px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#0d1424;color:var(--ink)}
+.music-row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.music-row .btn{flex:1;padding:8px 6px;font-size:13px}
+.music-now{font-size:12px;color:var(--gold);margin-top:8px;min-height:1.2em;line-height:1.35}
+.top-music{display:flex;gap:4px;align-items:center}
+.top-music .iconbtn{width:36px;height:36px;font-size:14px}
 </style>
 </head>
 <body>
@@ -172,16 +181,26 @@ h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
   <div class="gate-card">
     <div class="logo">⭐</div>
     <h1>小熊闯关</h1>
-    <p>看燕美在财务室遇到难题，请老师出招，答题拿星，再在真实工作里用一次。<br>点「开启音乐」后应能明显听到旋律；听不清可先点「测试音乐」。</p>
+    <p>看燕美在财务室遇到难题，请老师出招，答题拿星，再在真实工作里用一次。<br>点「开始游戏 · 开启音乐」后播放曲库（约 37 首 CC0）。可用上一首/下一首或下拉切换；也可选「合成闯关曲」。</p>
     <button class="btn gold full" id="startBtn">开始游戏 · 开启音乐</button>
     <button class="btn full" id="startMuted" style="margin-top:8px">先静音开始</button>
     <button class="btn full" id="testMusic" style="margin-top:8px">🔊 测试音乐</button>
+
+    <div class="music-panel">
+      <div class="ml">背景音乐（开源 CC0 · 可切换）</div>
+      <select id="trackSelect" aria-label="选曲"></select>
+      <div class="music-row">
+        <button type="button" class="btn" id="prevTrack">上一首</button>
+        <button type="button" class="btn" id="nextTrack">下一首</button>
+      </div>
+      <div class="music-now" id="nowPlaying">当前：合成闯关曲</div>
+    </div>
   </div>
 </div>
 <div class="wrap">
   <div class="topbar">
     <div class="brand"><b>小熊闯关 · 执行力短剧</b><span>关卡地图 · 短剧 · 答题 · 现实任务</span></div>
-    <button class="iconbtn" id="muteBtn" title="音乐" aria-label="音乐开关">🔇</button>
+    <div class="top-music"><button class="iconbtn" id="prevTrackTop" title="上一首" aria-label="上一首">⏮</button><button class="iconbtn" id="muteBtn" title="音乐" aria-label="音乐开关">🔇</button><button class="iconbtn" id="nextTrackTop" title="下一首" aria-label="下一首">⏭</button></div>
   </div>
   <div class="tabs">
     <button class="tab on" data-tab="game">闯关模式</button>
@@ -220,12 +239,28 @@ var BUILT=LESSONS.filter(function(l){return EPISODES[l.id]}).map(function(l){ret
 function unlocked(id){var i=BUILT.indexOf(id);if(i<0)return false;if(i===0)return true;return starsOf(game[BUILT[i-1]])>=1}
 function whoAv(w){if(w==="燕美")return "ym";if(w==="旁白")return "nb";if(w.indexOf("老师")>=0)return "ls";return "qt"}
 
-/* ===== BGM: 励志闯关 / victory-quest theme (Web Audio only) ===== */
+/* ===== BGM: CC0 playlist + 合成闯关曲 ===== */
 var AudioCtx=window.AudioContext||window.webkitAudioContext;
 var actx=null, master=null, muted=rd(MUTE_KEY); if(muted==null) muted=true;
-var bgmTimer=null, bgmOn=false;
+var bgmTimer=null, bgmOn=false, bgmMode="file"; // "file" | "synth"
 var MASTER_VOL=0.42;
-var LOOP_SEC=6.4; // faster loop (~150 BPM feel: 16 * 0.4s)
+var LOOP_SEC=6.4;
+var TRACK_KEY="changqing-track-v2";
+var CACHE_BUST="1792846168";
+var TRACKS=[{"id": "t01", "file": "music/fight_looped.ogg", "name": "疾速对战循环", "author": "XCVG", "license": "CC0", "source": "https://opengameart.org/content/fast-fight-battle-music-looped", "url": "music/fight_looped.ogg?v=1792846168"}, {"id": "t02", "file": "music/Juhani_20Junkala_20_5BChiptune_20Adventures_5D_201._20Stage_201.ogg", "name": "芯片冒险 · 关卡1", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/4-chiptunes-adventure", "url": "music/Juhani_20Junkala_20_5BChiptune_20Adventures_5D_201._20Stage_201.ogg?v=1792846168"}, {"id": "t03", "file": "music/Juhani_20Junkala_20_5BChiptune_20Adventures_5D_202._20Stage_202.ogg", "name": "芯片冒险 · 关卡2", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/4-chiptunes-adventure", "url": "music/Juhani_20Junkala_20_5BChiptune_20Adventures_5D_202._20Stage_202.ogg?v=1792846168"}, {"id": "t04", "file": "music/level3.mp3", "name": "芯片行动 · 关卡3", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/5-chiptunes-action", "url": "music/level3.mp3?v=1792846168"}, {"id": "t05", "file": "music/level1.mp3", "name": "芯片行动 · 关卡1", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/5-chiptunes-action", "url": "music/level1.mp3?v=1792846168"}, {"id": "t06", "file": "music/level2.mp3", "name": "芯片行动 · 关卡2", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/5-chiptunes-action", "url": "music/level2.mp3?v=1792846168"}, {"id": "t07", "file": "music/025_A_New_Town_0.mp3", "name": "新城镇主题", "author": "cynicmusic", "license": "CC0", "source": "https://opengameart.org/content/a-new-town-rpg-theme", "url": "music/025_A_New_Town_0.mp3?v=1792846168"}, {"id": "t08", "file": "music/fight.ogg", "name": "疾速对战", "author": "Ville Nousiainen / Xythe / mutka", "license": "CC0", "source": "https://opengameart.org/content/fast-fight-battle-music", "url": "music/fight.ogg?v=1792846168"}, {"id": "t09", "file": "music/happy_adveture_0.mp3", "name": "开心冒险循环", "author": "TinyWorlds", "license": "CC0", "source": "https://opengameart.org/content/happy-adventure-loop", "url": "music/happy_adveture_0.mp3?v=1792846168"}, {"id": "t10", "file": "music/Action3_20-_20Preparing_20For_20Battle.ogg", "name": "备战行动", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/jrpg-pack-5-action", "url": "music/Action3_20-_20Preparing_20For_20Battle.ogg?v=1792846168"}, {"id": "t11", "file": "music/Fighting_20is_20not_20an_20option.mp3", "name": "RPG对战主题", "author": "CleytonKauffman", "license": "CC0", "source": "https://opengameart.org/content/rpg-battle-theme-ii", "url": "music/Fighting_20is_20not_20an_20option.mp3?v=1792846168"}, {"id": "t12", "file": "music/TownTheme_0.mp3", "name": "城镇主题", "author": "cynicmusic", "license": "CC0", "source": "https://opengameart.org/content/town-theme-rpg", "url": "music/TownTheme_0.mp3?v=1792846168"}, {"id": "t13", "file": "music/newbattle.mp3", "name": "8位对战", "author": "celestialghost8", "license": "CC0", "source": "https://opengameart.org/content/8-bit-battle-theme-famitracker", "url": "music/newbattle.mp3?v=1792846168"}, {"id": "t14", "file": "music/boss_battle__232.mp3", "name": "Boss战 · 8位", "author": "nene", "license": "CC0", "source": "https://opengameart.org/content/boss-battle-2-8-bit", "url": "music/boss_battle__232.mp3?v=1792846168"}, {"id": "t15", "file": "music/montage-music-20130526_40200928.ogg", "name": "蒙太奇闯关", "author": "tricksntraps", "license": "CC0", "source": "https://opengameart.org/content/free-music-pack", "url": "music/montage-music-20130526_40200928.ogg?v=1792846168"}, {"id": "t16", "file": "music/Christmas_20synths.mp3", "name": "快乐合成器", "author": "3xBlast", "license": "CC0", "source": "https://opengameart.org/content/happy-synths-loop-with-slight-christmas-feeling", "url": "music/Christmas_20synths.mp3?v=1792846168"}, {"id": "t17", "file": "music/Tha_27el_20Mines.ogg", "name": "矿洞探险", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/jrpg-pack-1-exploration", "url": "music/Tha_27el_20Mines.ogg?v=1792846168"}, {"id": "t18", "file": "music/Evil2_20-_20Catacombs.ogg", "name": "地下墓穴", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/jrpg-pack-3-evil", "url": "music/Evil2_20-_20Catacombs.ogg?v=1792846168"}, {"id": "t19", "file": "music/Evil3_20-_20Apocalypse.ogg", "name": "天启行动", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/jrpg-pack-3-evil", "url": "music/Evil3_20-_20Apocalypse.ogg?v=1792846168"}, {"id": "t20", "file": "music/Boss.ogg", "name": "射击Boss", "author": "SketchyLogic", "license": "CC0", "source": "https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles", "url": "music/Boss.ogg?v=1792846168"}, {"id": "t21", "file": "music/Venus.ogg", "name": "金星关卡", "author": "SketchyLogic", "license": "CC0", "source": "https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles", "url": "music/Venus.ogg?v=1792846168"}, {"id": "t22", "file": "music/Map.ogg", "name": "地图主题", "author": "SketchyLogic", "license": "CC0", "source": "https://opengameart.org/content/nes-shooter-music-5-tracks-3-jingles", "url": "music/Map.ogg?v=1792846168"}, {"id": "t23", "file": "music/n3535n5n335n35nj.ogg", "name": "废墟小镇", "author": "HaelDB", "license": "CC0", "source": "https://opengameart.org/content/town-in-ruins-loop", "url": "music/n3535n5n335n35nj.ogg?v=1792846168"}, {"id": "t24", "file": "music/215_super_action_chiptunes_bgm_stage_6.ogg", "name": "超级行动芯片", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/12-music-loops", "url": "music/215_super_action_chiptunes_bgm_stage_6.ogg?v=1792846168"}, {"id": "t25", "file": "music/006_heavy_metal_chiptunes_bgm_stage_f_faster.ogg", "name": "重金属芯片", "author": "SubspaceAudio", "license": "CC0", "source": "https://opengameart.org/content/12-music-loops", "url": "music/006_heavy_metal_chiptunes_bgm_stage_f_faster.ogg?v=1792846168"}, {"id": "t26", "file": "music/hauntedcastle.mp3", "name": "8位古堡", "author": "Wolfgang_", "license": "CC0", "source": "https://opengameart.org/content/8-bit-haunted-house-theme", "url": "music/hauntedcastle.mp3?v=1792846168"}, {"id": "t27", "file": "music/adventuring_song.mp3", "name": "冒险时光", "author": "Scribe", "license": "CC0", "source": "https://opengameart.org/content/adventure-time", "url": "music/adventuring_song.mp3?v=1792846168"}, {"id": "t28", "file": "music/Play_20Now.mp3", "name": "动漫开场", "author": "CleytonKauffman", "license": "CC0", "source": "https://opengameart.org/content/anime-esque-intro-outro-theme", "url": "music/Play_20Now.mp3?v=1792846168"}, {"id": "t29", "file": "music/ObservingTheStar.ogg", "name": "星空背景", "author": "yd", "license": "CC0", "source": "https://opengameart.org/content/another-space-background-track", "url": "music/ObservingTheStar.ogg?v=1792846168"}, {"id": "t30", "file": "music/awake10_megaWall_0.mp3", "name": "觉醒高墙", "author": "cynicmusic", "license": "CC0", "source": "https://opengameart.org/content/awake-megawall-10", "url": "music/awake10_megaWall_0.mp3?v=1792846168"}, {"id": "t31", "file": "music/8bit_20Bossa.mp3", "name": "8位波萨", "author": "Joth", "license": "CC0", "source": "https://opengameart.org/content/bossa-nova", "url": "music/8bit_20Bossa.mp3?v=1792846168"}, {"id": "t32", "file": "music/Bumblebee_20loop.ogg", "name": "大黄蜂循环", "author": "jobromedia", "license": "CC0", "source": "https://opengameart.org/content/bumblebee-loop", "url": "music/Bumblebee_20loop.ogg?v=1792846168"}, {"id": "t33", "file": "music/Children_27s_20March_20Theme.mp3", "name": "童趣进行曲", "author": "CleytonKauffman", "license": "CC0", "source": "https://opengameart.org/content/childrens-march-theme", "url": "music/Children_27s_20March_20Theme.mp3?v=1792846168"}, {"id": "t34", "file": "music/zombie_20main_20music.ogg", "name": "主菜单 Chill", "author": "HaelDB", "license": "CC0", "source": "https://opengameart.org/content/chill-main-menu-music", "url": "music/zombie_20main_20music.ogg?v=1792846168"}, {"id": "t35", "file": "music/song18.mp3", "name": "水晶洞穴", "author": "cynicmusic", "license": "CC0", "source": "https://opengameart.org/content/crystal-cave-song18", "url": "music/song18.mp3?v=1792846168"}, {"id": "t36", "file": "music/Cyberpunk_20Moonlight_20Sonata_20v2_0.mp3", "name": "赛博月光奏鸣曲", "author": "Joth", "license": "CC0", "source": "https://opengameart.org/content/cyberpunk-moonlight-sonata", "url": "music/Cyberpunk_20Moonlight_20Sonata_20v2_0.mp3?v=1792846168"}, {"id": "t37", "file": "music/caravan.ogg_0.ogg", "name": "沙漠商队", "author": "yd", "license": "CC0", "source": "https://opengameart.org/content/desert-theme", "url": "music/caravan.ogg_0.ogg?v=1792846168"}];
+var SYNTH_ID="synth";
+var trackIdx=0;
+(function(){
+  var saved=rd(TRACK_KEY);
+  if(saved===SYNTH_ID){bgmMode="synth";trackIdx=-1;return}
+  if(typeof saved==="number"&&saved>=0&&saved<TRACKS.length){trackIdx=saved;bgmMode="file";return}
+  if(typeof saved==="string"){
+    for(var i=0;i<TRACKS.length;i++){if(TRACKS[i].id===saved){trackIdx=i;bgmMode="file";return}}
+  }
+  trackIdx=0;bgmMode="file";
+})();
+var fileAudio=null;
+
 function ensureAudio(){
   if(!actx){
     actx=new AudioCtx();
@@ -273,7 +308,6 @@ function kick(t0){
   o.start(t0); o.stop(t0+0.2);
 }
 function snare(t0){
-  // noise-ish burst via high detuned square + filter
   var o=actx.createOscillator(), o2=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
   o.type="square"; o2.type="square";
   o.frequency.setValueAtTime(220,t0); o2.frequency.setValueAtTime(330,t0);
@@ -301,17 +335,10 @@ function chordStab(freqs,t0,dur){
   });
 }
 function scheduleBgm(){
-  if(!actx||muted)return;
+  if(!actx||muted||bgmMode!=="synth")return;
   var t=actx.currentTime+0.04;
-  var step=0.4; // 16 steps * 0.4s = 6.4s
-  // Bright major progression: C – G – Am – F (uplifting game loop)
-  var prog=[
-    [261.63,329.63,392.00],
-    [196.00,246.94,293.66],
-    [220.00,261.63,329.63],
-    [174.61,220.00,261.63]
-  ];
-  // Punchy bass root notes
+  var step=0.4;
+  var prog=[[261.63,329.63,392.00],[196.00,246.94,293.66],[220.00,261.63,329.63],[174.61,220.00,261.63]];
   var bass=[130.81,98.00,110.00,87.31];
   for(var bar=0; bar<4; bar++){
     var bt=t+bar*4*step;
@@ -319,49 +346,143 @@ function scheduleBgm(){
     bassHit(bass[bar], bt, 0.35);
     bassHit(bass[bar], bt+2*step, 0.3);
   }
-  // Lead melody — victory/quest hook (C major, energetic)
-  var mel=[
-    523.25,587.33,659.25,783.99, 659.25,587.33,523.25,392.00,
-    523.25,659.25,783.99,880.00, 783.99,659.25,587.33,523.25
-  ];
+  var mel=[523.25,587.33,659.25,783.99,659.25,587.33,523.25,392.00,523.25,659.25,783.99,880.00,783.99,659.25,587.33,523.25];
   mel.forEach(function(f,i){
     var tt=t+i*step;
     tone(f,tt,0.32,"square",0.20);
     tone(f*2,tt,0.22,"triangle",0.10);
     tone(f,tt+0.01,0.18,"sawtooth",0.06);
   });
-  // Stronger drums: kick on 1/3, snare on 2/4, hats every step
   for(var i=0;i<16;i++){
     var tt=t+i*step;
     hat(tt);
     if(i%4===0) kick(tt);
     if(i%4===2) snare(tt);
-    if(i%8===4) kick(tt); // extra drive mid-bar
+    if(i%8===4) kick(tt);
   }
 }
-function startBgm(){
+function stopFileAudio(){
+  if(fileAudio){
+    try{fileAudio.onended=null;fileAudio.pause();fileAudio.removeAttribute("src");fileAudio.load()}catch(e){}
+    fileAudio=null;
+  }
+}
+function stopSynth(){if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function stopBgm(){bgmOn=false;stopSynth();stopFileAudio()}
+function currentTrackLabel(){
+  if(bgmMode==="synth"||trackIdx<0) return "合成闯关曲";
+  var t=TRACKS[trackIdx]; return t?t.name:"—";
+}
+function syncTrackUI(){
+  var label=currentTrackLabel();
+  var np=document.getElementById("nowPlaying");
+  if(np) np.textContent="当前："+label+(bgmMode==="file"?" · CC0":"");
+  var sel=document.getElementById("trackSelect");
+  if(sel){
+    var want=bgmMode==="synth"?SYNTH_ID:(TRACKS[trackIdx]?TRACKS[trackIdx].id:"");
+    if(sel.value!==want) sel.value=want;
+  }
+}
+function fillTrackSelect(){
+  var sel=document.getElementById("trackSelect");
+  if(!sel||sel.options.length) return;
+  var o0=document.createElement("option");
+  o0.value=SYNTH_ID; o0.textContent="♪ 合成闯关曲（本机生成）";
+  sel.appendChild(o0);
+  TRACKS.forEach(function(t,i){
+    var o=document.createElement("option");
+    o.value=t.id;
+    o.textContent=(i+1)+". "+t.name;
+    sel.appendChild(o);
+  });
+  syncTrackUI();
+}
+function persistTrack(){
+  if(bgmMode==="synth") wr(TRACK_KEY, SYNTH_ID);
+  else if(TRACKS[trackIdx]) wr(TRACK_KEY, TRACKS[trackIdx].id);
+}
+function playFileTrack(){
+  stopSynth();
+  stopFileAudio();
+  if(trackIdx<0||trackIdx>=TRACKS.length) return;
+  var t=TRACKS[trackIdx];
+  var a=new Audio();
+  a.loop=true;
+  a.preload="auto";
+  a.volume=muted?0:Math.min(1, MASTER_VOL+0.35);
+  a.src=t.url || (t.file+"?v="+CACHE_BUST);
+  fileAudio=a;
+  var p=a.play();
+  if(p&&p.catch) p.catch(function(err){
+    console.warn("audio play failed", err);
+    // Safari autoplay / decode: fall back to synth so user still hears something
+    toast("这首暂时播不了，已切合成曲", true);
+    selectSynth(true);
+  });
+}
+function startSynthLoop(){
+  stopFileAudio();
   ensureAudio();
-  bgmOn=true;
-  if(master) master.gain.setTargetAtTime(muted?0:MASTER_VOL, actx.currentTime, 0.03);
-  if(bgmTimer)clearInterval(bgmTimer);
+  stopSynth();
   scheduleBgm();
   bgmTimer=setInterval(scheduleBgm, LOOP_SEC*1000);
-  syncMuteBtn();
 }
-function stopBgm(){bgmOn=false;if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
+function startBgm(){
+  bgmOn=true;
+  ensureAudio();
+  if(master) master.gain.setTargetAtTime(muted?0:MASTER_VOL, actx.currentTime, 0.03);
+  if(bgmMode==="synth") startSynthLoop();
+  else playFileTrack();
+  syncMuteBtn();
+  syncTrackUI();
+}
+function selectSynth(autoStart){
+  bgmMode="synth"; trackIdx=-1; persistTrack(); syncTrackUI();
+  if(autoStart||(bgmOn&&!muted)) startBgm();
+}
+function selectTrack(i, autoStart){
+  if(i<0||i>=TRACKS.length) return;
+  bgmMode="file"; trackIdx=i; persistTrack(); syncTrackUI();
+  if(autoStart||(bgmOn&&!muted)||S.started){
+    if(muted){ /* keep muted but remember */ syncTrackUI(); return; }
+    bgmOn=true; playFileTrack(); syncMuteBtn();
+  }
+}
+function nextTrack(){
+  if(bgmMode==="synth"){ selectTrack(0, true); return; }
+  selectTrack((trackIdx+1)%TRACKS.length, true);
+}
+function prevTrack(){
+  if(bgmMode==="synth"){ selectTrack(TRACKS.length-1, true); return; }
+  selectTrack((trackIdx-1+TRACKS.length)%TRACKS.length, true);
+}
 function setMuted(m){
   muted=!!m; wr(MUTE_KEY,muted);
   if(master) master.gain.setTargetAtTime(muted?0:MASTER_VOL, actx?actx.currentTime:0, 0.05);
+  if(fileAudio) fileAudio.volume=muted?0:Math.min(1, MASTER_VOL+0.35);
+  if(muted){ if(fileAudio) try{fileAudio.pause()}catch(e){} stopSynth(); }
+  else if(S.started){ startBgm(); }
   syncMuteBtn();
-  if(!muted&&S.started) startBgm();
 }
 function syncMuteBtn(){var b=document.getElementById("muteBtn");if(!b)return;b.textContent=muted?"🔇":"🔊";b.classList.toggle("on",!muted)}
 function testBeep(){
+  // Prefer previewing current selection
+  if(bgmMode==="file"&&TRACKS[trackIdx]){
+    ensureAudio();
+    var was=muted;
+    muted=false;
+    playFileTrack();
+    toast("试听："+currentTrackLabel(), false);
+    setTimeout(function(){
+      if(was){ muted=true; if(fileAudio){try{fileAudio.pause()}catch(e){}} wr(MUTE_KEY,true); syncMuteBtn(); }
+    }, 5000);
+    syncMuteBtn();
+    return;
+  }
   ensureAudio();
   var was=muted;
   if(master) master.gain.setValueAtTime(MASTER_VOL, actx.currentTime);
   var t0=actx.currentTime+0.02;
-  // Short victory fanfare so speakers are obvious
   [523.25,659.25,783.99,1046.50].forEach(function(f,i){
     tone(f,t0+i*0.12,0.22,"square",0.28);
     tone(f*2,t0+i*0.12,0.16,"triangle",0.12);
@@ -371,13 +492,28 @@ function testBeep(){
     if(was && master && !bgmOn) master.gain.setTargetAtTime(0, actx.currentTime, 0.05);
   }, 800);
 }
-function unlockAndMaybeMusic(withMusic){S.started=true;document.getElementById("gate").classList.add("hidden");
-  if(withMusic){setMuted(false);startBgm()}else{setMuted(true)} render()}
+function unlockAndMaybeMusic(withMusic){
+  S.started=true;document.getElementById("gate").classList.add("hidden");
+  if(withMusic){setMuted(false);startBgm()}else{setMuted(true)} render()
+}
 
+fillTrackSelect();
 document.getElementById("startBtn").onclick=function(){unlockAndMaybeMusic(true)};
 document.getElementById("startMuted").onclick=function(){unlockAndMaybeMusic(false)};
-document.getElementById("testMusic").onclick=function(){testBeep();toast("听到三声「滴」了吗？",false)};
-document.getElementById("muteBtn").onclick=function(){if(!S.started){testBeep();return}ensureAudio();setMuted(!muted);if(!muted)startBgm()};
+document.getElementById("testMusic").onclick=function(){testBeep()};
+document.getElementById("muteBtn").onclick=function(){if(!S.started){testBeep();return}ensureAudio();setMuted(!muted)};
+document.getElementById("prevTrack").onclick=function(){prevTrack(); if(!S.started) toast("已选："+currentTrackLabel(),false)};
+document.getElementById("nextTrack").onclick=function(){nextTrack(); if(!S.started) toast("已选："+currentTrackLabel(),false)};
+document.getElementById("prevTrackTop").onclick=function(){if(!S.started){prevTrack();toast(currentTrackLabel(),false);return}prevTrack()};
+document.getElementById("nextTrackTop").onclick=function(){if(!S.started){nextTrack();toast(currentTrackLabel(),false);return}nextTrack()};
+document.getElementById("trackSelect").onchange=function(){
+  var v=this.value;
+  if(v===SYNTH_ID){ selectSynth(!!S.started && !muted); toast("合成闯关曲",false); return; }
+  for(var i=0;i<TRACKS.length;i++){
+    if(TRACKS[i].id===v){ selectTrack(i, !!S.started && !muted); toast(TRACKS[i].name,false); return; }
+  }
+};
+
 
 function renderMap(){
   var st=total(),idx=0;RANKS.forEach(function(r,i){if(st>=r.min)idx=i});var cur=RANKS[idx],nx=RANKS[idx+1];
