@@ -220,73 +220,124 @@ var BUILT=LESSONS.filter(function(l){return EPISODES[l.id]}).map(function(l){ret
 function unlocked(id){var i=BUILT.indexOf(id);if(i<0)return false;if(i===0)return true;return starsOf(game[BUILT[i-1]])>=1}
 function whoAv(w){if(w==="燕美")return "ym";if(w==="旁白")return "nb";if(w.indexOf("老师")>=0)return "ls";return "qt"}
 
-/* ===== BGM via Web Audio (louder melody + chords + click, no files) ===== */
+/* ===== BGM: 励志闯关 / victory-quest theme (Web Audio only) ===== */
 var AudioCtx=window.AudioContext||window.webkitAudioContext;
 var actx=null, master=null, muted=rd(MUTE_KEY); if(muted==null) muted=true;
 var bgmTimer=null, bgmOn=false;
-var MASTER_VOL=0.38; // phone-audible; was 0.07 (too quiet)
+var MASTER_VOL=0.42;
+var LOOP_SEC=6.4; // faster loop (~150 BPM feel: 16 * 0.4s)
 function ensureAudio(){
   if(!actx){
     actx=new AudioCtx();
     master=actx.createGain();
     master.gain.value=muted?0:MASTER_VOL;
-    // Soft compressor so melody stays clear without clipping
     var comp=actx.createDynamicsCompressor();
-    comp.threshold.value=-18; comp.knee.value=12; comp.ratio.value=3;
-    comp.attack.value=0.01; comp.release.value=0.2;
+    comp.threshold.value=-16; comp.knee.value=10; comp.ratio.value=3.5;
+    comp.attack.value=0.003; comp.release.value=0.15;
     master.connect(comp); comp.connect(actx.destination);
   }
   if(actx.state==="suspended")actx.resume();
 }
 function tone(freq,t0,dur,type,gain){
   var o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
-  o.type=type||"triangle";
+  o.type=type||"square";
   o.frequency.setValueAtTime(freq,t0);
-  f.type="lowpass"; f.frequency.setValueAtTime(2800,t0);
+  f.type="lowpass"; f.frequency.setValueAtTime(4200,t0);
   g.gain.setValueAtTime(0.0001,t0);
-  g.gain.exponentialRampToValueAtTime(Math.max(0.001,gain||0.12),t0+0.03);
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+Math.max(0.08,dur));
+  g.gain.exponentialRampToValueAtTime(Math.max(0.001,gain||0.12),t0+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+Math.max(0.05,dur));
+  o.connect(f); f.connect(g); g.connect(master);
+  o.start(t0); o.stop(t0+dur+0.04);
+}
+function bassHit(freq,t0,dur){
+  var o=actx.createOscillator(), g=actx.createGain();
+  o.type="sawtooth";
+  o.frequency.setValueAtTime(freq,t0);
+  o.frequency.exponentialRampToValueAtTime(Math.max(40,freq*0.85),t0+dur);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(0.28,t0+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  var f=actx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=380;
   o.connect(f); f.connect(g); g.connect(master);
   o.start(t0); o.stop(t0+dur+0.05);
 }
-function chord(freqs,t0,dur,gain){
-  freqs.forEach(function(f,i){
-    tone(f,t0+i*0.01,dur,"triangle",(gain||0.1)*0.85);
-    tone(f*2,t0+i*0.01,dur*0.9,"sine",(gain||0.1)*0.35);
-  });
-}
-function click(t0){
-  // soft percussion tick
+function kick(t0){
   var o=actx.createOscillator(), g=actx.createGain();
-  o.type="square"; o.frequency.setValueAtTime(180,t0);
-  o.frequency.exponentialRampToValueAtTime(60,t0+0.06);
+  o.type="sine";
+  o.frequency.setValueAtTime(150,t0);
+  o.frequency.exponentialRampToValueAtTime(45,t0+0.12);
   g.gain.setValueAtTime(0.0001,t0);
-  g.gain.exponentialRampToValueAtTime(0.14,t0+0.005);
-  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.08);
+  g.gain.exponentialRampToValueAtTime(0.55,t0+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.18);
   o.connect(g); g.connect(master);
-  o.start(t0); o.stop(t0+0.1);
+  o.start(t0); o.stop(t0+0.2);
+}
+function snare(t0){
+  // noise-ish burst via high detuned square + filter
+  var o=actx.createOscillator(), o2=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
+  o.type="square"; o2.type="square";
+  o.frequency.setValueAtTime(220,t0); o2.frequency.setValueAtTime(330,t0);
+  f.type="bandpass"; f.frequency.setValueAtTime(1800,t0); f.Q.value=0.8;
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(0.22,t0+0.004);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.09);
+  o.connect(f); o2.connect(f); f.connect(g); g.connect(master);
+  o.start(t0); o2.start(t0); o.stop(t0+0.1); o2.stop(t0+0.1);
+}
+function hat(t0){
+  var o=actx.createOscillator(), g=actx.createGain(), f=actx.createBiquadFilter();
+  o.type="square"; o.frequency.setValueAtTime(8000,t0);
+  f.type="highpass"; f.frequency.value=6000;
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(0.08,t0+0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+0.04);
+  o.connect(f); f.connect(g); g.connect(master);
+  o.start(t0); o.stop(t0+0.05);
+}
+function chordStab(freqs,t0,dur){
+  freqs.forEach(function(f,i){
+    tone(f,t0+i*0.005,dur,"sawtooth",0.09);
+    tone(f*2,t0+i*0.005,dur*0.85,"square",0.05);
+  });
 }
 function scheduleBgm(){
   if(!actx||muted)return;
-  var t=actx.currentTime+0.05;
-  // C – Am – F – G, looping ~8s; clear mid-range melody on top
+  var t=actx.currentTime+0.04;
+  var step=0.4; // 16 steps * 0.4s = 6.4s
+  // Bright major progression: C – G – Am – F (uplifting game loop)
   var prog=[
-    [261.63,329.63,392.00], // C
-    [220.00,261.63,329.63], // Am
-    [174.61,220.00,261.63], // F
-    [196.00,246.94,293.66]  // G
+    [261.63,329.63,392.00],
+    [196.00,246.94,293.66],
+    [220.00,261.63,329.63],
+    [174.61,220.00,261.63]
   ];
-  prog.forEach(function(ch,i){chord(ch,t+i*2.0,2.35,0.13)});
-  // Melody (C major-ish): obvious, singable, mid-high
-  var mel=[523.25,587.33,659.25,783.99, 659.25,587.33,523.25,392.00,
-           440.00,523.25,587.33,659.25, 587.33,523.25,493.88,392.00];
+  // Punchy bass root notes
+  var bass=[130.81,98.00,110.00,87.31];
+  for(var bar=0; bar<4; bar++){
+    var bt=t+bar*4*step;
+    chordStab(prog[bar], bt, 1.45);
+    bassHit(bass[bar], bt, 0.35);
+    bassHit(bass[bar], bt+2*step, 0.3);
+  }
+  // Lead melody — victory/quest hook (C major, energetic)
+  var mel=[
+    523.25,587.33,659.25,783.99, 659.25,587.33,523.25,392.00,
+    523.25,659.25,783.99,880.00, 783.99,659.25,587.33,523.25
+  ];
   mel.forEach(function(f,i){
-    var tt=t+i*0.5;
-    tone(f,tt,0.42,"triangle",0.22);
-    tone(f*2,tt,0.28,"sine",0.08);
+    var tt=t+i*step;
+    tone(f,tt,0.32,"square",0.20);
+    tone(f*2,tt,0.22,"triangle",0.10);
+    tone(f,tt+0.01,0.18,"sawtooth",0.06);
   });
-  // Soft beat every half bar
-  for(var i=0;i<16;i++){ if(i%2===0) click(t+i*0.5); }
+  // Stronger drums: kick on 1/3, snare on 2/4, hats every step
+  for(var i=0;i<16;i++){
+    var tt=t+i*step;
+    hat(tt);
+    if(i%4===0) kick(tt);
+    if(i%4===2) snare(tt);
+    if(i%8===4) kick(tt); // extra drive mid-bar
+  }
 }
 function startBgm(){
   ensureAudio();
@@ -294,7 +345,7 @@ function startBgm(){
   if(master) master.gain.setTargetAtTime(muted?0:MASTER_VOL, actx.currentTime, 0.03);
   if(bgmTimer)clearInterval(bgmTimer);
   scheduleBgm();
-  bgmTimer=setInterval(scheduleBgm,8000);
+  bgmTimer=setInterval(scheduleBgm, LOOP_SEC*1000);
   syncMuteBtn();
 }
 function stopBgm(){bgmOn=false;if(bgmTimer){clearInterval(bgmTimer);bgmTimer=null}}
@@ -309,16 +360,16 @@ function testBeep(){
   ensureAudio();
   var was=muted;
   if(master) master.gain.setValueAtTime(MASTER_VOL, actx.currentTime);
-  var t=actx.currentTime+0.02;
-  // Three clear ascending beeps so speakers are unmistakable
-  [523.25,659.25,783.99].forEach(function(f,i){
-    tone(f,t+i*0.22,0.28,"triangle",0.32);
-    tone(f*2,t+i*0.22,0.2,"sine",0.12);
+  var t0=actx.currentTime+0.02;
+  // Short victory fanfare so speakers are obvious
+  [523.25,659.25,783.99,1046.50].forEach(function(f,i){
+    tone(f,t0+i*0.12,0.22,"square",0.28);
+    tone(f*2,t0+i*0.12,0.16,"triangle",0.12);
   });
-  // Restore mute state after test (don't leave unmuted unless she started with music)
+  kick(t0); snare(t0+0.24);
   setTimeout(function(){
     if(was && master && !bgmOn) master.gain.setTargetAtTime(0, actx.currentTime, 0.05);
-  }, 900);
+  }, 800);
 }
 function unlockAndMaybeMusic(withMusic){S.started=true;document.getElementById("gate").classList.add("hidden");
   if(withMusic){setMuted(false);startBgm()}else{setMuted(true)} render()}
