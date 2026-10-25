@@ -236,6 +236,16 @@ h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
 @media (prefers-reduced-motion:reduce){
   .lv.lv-rec .c,.lv.lv-rec .c::before,.lv.lv-rec .c::after,.lv-row.rec-row::before,.rec-card .btn.gold::after{animation:none}
 }
+
+/* short-drama theater (persistent outside #app) */
+.theater{position:fixed;inset:0;z-index:90;background:rgba(8,6,18,.78);display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.theater[hidden]{display:none!important}
+.theater-inner{width:min(420px,100%);max-height:94vh;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#241a38,#161022);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+.theater video{width:100%;max-height:68vh;border-radius:12px;background:#000;aspect-ratio:9/16;object-fit:contain}
+.theater-actions{display:flex;gap:8px;flex-wrap:wrap}
+.theater-actions .btn{flex:1;min-width:88px}
+.video-hint{margin-top:6px;line-height:1.55}
+
 </style>
 </head>
 <body>
@@ -272,6 +282,17 @@ h1.ep{font-size:20px;margin:4px 0;line-height:1.35}
 </div>
 <div class="toast" id="toast"></div>
 <canvas id="fx"></canvas>
+<div id="theater" class="theater" hidden>
+  <div class="theater-inner">
+    <video id="epVideo" playsinline webkit-playsinline controls preload="metadata"></video>
+    <div class="theater-actions">
+      <button type="button" class="btn" data-act="skipVideo">跳过视频</button>
+      <button type="button" class="btn" data-act="textStory">文字版</button>
+      <button type="button" class="btn pri" data-act="videoDone">看完了 / 下一幕 ▶</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var ROOT="P:\\常青老师课程\\";
 var COURSES=[{"key": "zx", "name": "执行力系统课程", "short": "执行力"}, {"key": "xx", "name": "学习力闭环训练营", "short": "学习力"}, {"key": "rs", "name": "人生规划罗盘", "short": "人生罗盘"}, {"key": "zs", "name": "知识体系训练营", "short": "知识体系"}, {"key": "wn", "name": "外脑系统训练营", "short": "外脑"}, {"key": "zy", "name": "职业规划系统", "short": "职业规划"}, {"key": "zt", "name": "思维专题课（选修）", "short": "思维专题"}, {"key": "sj", "name": "赠送·时间整理术（选修）", "short": "时间整理术"}];
@@ -291,7 +312,46 @@ var canSave=true;try{localStorage.setItem("changqing-probe","1")}catch(e){canSav
 var game=rd(GAME_KEY)||{};
 var lessonSt={};LESSONS.forEach(function(l){lessonSt[l.id]=l.d||"未开始"});
 var savedSt=rd(KEY);if(savedSt)for(var k in savedSt)lessonSt[k]=savedSt[k];
-var S={tab:"game",level:null,phase:"story",si:0,ai:0,picks:[],course:"zx",started:false};
+var VIDEOS={zx01:"media/zx01.mp4",zx02:"media/zx02.mp4",zx03:"media/zx03.mp4"};
+var S={tab:"game",level:null,phase:"story",si:0,ai:0,picks:[],course:"zx",started:false,forceText:false};
+var _bgmPreVol=null,_theaterEp=null;
+function duckBgm(){
+  try{
+    if(fileAudio){ if(_bgmPreVol==null)_bgmPreVol=fileAudio.volume; fileAudio.volume=Math.min(fileAudio.volume||0,0.06); }
+    if(master&&actx) master.gain.setTargetAtTime(muted?0:0.05, actx.currentTime, 0.05);
+  }catch(e){}
+}
+function unduckBgm(){
+  try{
+    if(fileAudio&&_bgmPreVol!=null){ fileAudio.volume=muted?0:_bgmPreVol; _bgmPreVol=null; }
+    else if(fileAudio&&!muted) fileAudio.volume=Math.min(1, MASTER_VOL+0.35);
+    if(master&&actx) master.gain.setTargetAtTime(muted?0:MASTER_VOL, actx.currentTime, 0.05);
+  }catch(e){}
+}
+function hideTheater(){
+  var th=document.getElementById("theater"), v=document.getElementById("epVideo");
+  if(th) th.hidden=true;
+  if(v){ try{v.pause()}catch(e){} try{v.removeAttribute("src");v.load()}catch(e){} }
+  _theaterEp=null; unduckBgm();
+}
+function syncTheater(){
+  var ep=S.level&&EPISODES[S.level];
+  var want=!!(S.started && S.tab==="game" && ep && S.phase==="story" && VIDEOS[ep.id] && !S.forceText);
+  var th=document.getElementById("theater"), v=document.getElementById("epVideo");
+  if(!th||!v) return;
+  if(!want){ if(!th.hidden||_theaterEp) hideTheater(); return; }
+  th.hidden=false;
+  if(_theaterEp!==ep.id){
+    _theaterEp=ep.id;
+    v.src=VIDEOS[ep.id];
+    duckBgm();
+    var p=v.play();
+    if(p&&p.catch) p.catch(function(){});
+  } else {
+    duckBgm();
+  }
+}
+
 var ORDER=STATUSES;
 function raise(id,v){if(ORDER.indexOf(lessonSt[id])<ORDER.indexOf(v)){lessonSt[id]=v;wr(KEY,lessonSt)}}
 function mark(id,k){var p=game[id]||{story:false,quiz:false,task:false};if(p[k])return;p[k]=true;game[id]=p;wr(GAME_KEY,game);
@@ -637,8 +697,16 @@ function renderPlayer(){
   var h='<div class="muted">'+esc(ep.ep)+' · '+esc(ep.courseLabel||(LESSONS.find(function(l){return l.id===ep.id})||{}).n||'')+'</div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h1 class="ep">'+esc(ep.title)+'</h1>'+stars(starsOf(prog),true,popStar&&popStar.id===ep.id?popStar.n-1:-1)+'</div>';
   h+='<div class="xp"><i style="width:'+(doneSteps/3*100)+'%"></i></div>';
   h+='<div class="phases">'+ph.map(function(p,i){return '<span class="'+(p===S.phase?'on':'')+'">'+lb[i]+'</span>'}).join("")+'</div>';
-  if(S.phase==="story"){h+=dots(ep.scenes.length,S.si)+sceneCard(ep.scenes[S.si],S.si,ep.scenes.length)+'<div class="row">'+(S.si>0?'<button class="btn" data-act="prev">上一幕</button>':'')+
-    (S.si<ep.scenes.length-1?'<button class="btn pri" data-act="next" style="flex:1">下一幕 ▶</button>':'<button class="btn pri" data-act="toCliff" style="flex:1">进入悬念 ▶</button>')+'</div>'}
+  if(S.phase==="story"){
+    if(VIDEOS[ep.id]&&!S.forceText){
+      h+='<div class="card"><div class="tag">短剧 · 竖屏</div><p class="muted video-hint">本集有短剧。请看上方播放器；看完点「看完了」进入悬念。也可跳过，或改看文字版分镜。</p></div>';
+      h+='<div class="row"><button class="btn" data-act="skipVideo">跳过视频</button><button class="btn" data-act="textStory">文字版</button><button class="btn pri" data-act="videoDone" style="flex:1">看完了 / 下一幕 ▶</button></div>';
+    }else{
+      h+=dots(ep.scenes.length,S.si)+sceneCard(ep.scenes[S.si],S.si,ep.scenes.length)+'<div class="row">'+(S.si>0?'<button class="btn" data-act="prev">上一幕</button>':'')+
+        (S.si<ep.scenes.length-1?'<button class="btn pri" data-act="next" style="flex:1">下一幕 ▶</button>':'<button class="btn pri" data-act="toCliff" style="flex:1">进入悬念 ▶</button>')+'</div>';
+      if(VIDEOS[ep.id]) h+='<div class="row"><button class="btn full" data-act="back2video">← 改看短剧</button></div>';
+    }
+  }
   if(S.phase==="cliff"){h+='<div class="stage cliff"><div class="muted" style="text-align:center">本集悬念</div><div class="cliff-txt">'+esc(ep.cliff)+'</div></div><div class="row"><button class="btn" data-act="back2story">回看剧情</button><button class="btn gold" data-act="toTeacher" style="flex:1">✨ 请老师出招</button></div>'}
   if(S.phase==="teacher"){h+='<div class="stage teacher"><div class="tag">常青老师出招 · '+(S.ai+1)+' / '+ep.teacher.length+'</div>'+dots(ep.teacher.length,S.ai)+
     '<div class="plate"><div class="av ls">师</div><div class="nm">常青老师</div></div><div class="line">'+esc(ep.teacher[S.ai])+'</div><div class="muted" style="margin-top:8px">出自：'+esc(ep.source)+'</div></div><div class="row">'+
@@ -673,20 +741,22 @@ function render(){
   document.querySelectorAll(".tab").forEach(function(b){b.classList.toggle("on",b.dataset.tab===S.tab)});
   document.getElementById("app").innerHTML=S.tab==="tracker"?renderTracker():(S.level?renderPlayer():renderMap());
   syncMuteBtn();popStar=null;
+  syncTheater();
 }
 function go(f){f();render();window.scrollTo(0,0)}
 document.addEventListener("click",function(e){
   var t=e.target.closest("button");if(!t)return;
   if(t.dataset.tab){go(function(){S.tab=t.dataset.tab});return}
-  if(t.dataset.open){var id=t.dataset.open;go(function(){S.level=id;S.phase="story";S.si=0;S.ai=0;S.picks=[];raise(id,"在学")});return}
+  if(t.dataset.open){var id=t.dataset.open;go(function(){S.level=id;S.phase="story";S.si=0;S.ai=0;S.picks=[];S.forceText=false;raise(id,"在学")});return}
   if(t.dataset.course){go(function(){S.course=t.dataset.course});return}
   if(t.id==="resetGame"){if(confirm("确定清空所有星星吗？")){game={};wr(GAME_KEY,game);render()}return}
   if(t.dataset.q!=null){var qi=+t.dataset.q,oi=+t.dataset.o,ep=EPISODES[S.level];S.picks[qi]=oi;
     if(ep.quiz.every(function(q,i){return S.picks[i]===q.answer}))mark(ep.id,"quiz");render();return}
   var a=t.dataset.act,ep2=S.level&&EPISODES[S.level];
   var A={prev:function(){S.si--},next:function(){S.si++},toCliff:function(){S.phase="cliff"},back2story:function(){S.phase="story";S.si=ep2.scenes.length-1},
+    skipVideo:function(){S.phase="cliff"},videoDone:function(){S.phase="cliff"},textStory:function(){S.forceText=true;S.si=0},back2video:function(){S.forceText=false;S.phase="story";S.si=0},
     toTeacher:function(){S.phase="teacher";S.ai=0},tprev:function(){S.ai--},tnext:function(){S.ai++},toAfter:function(){S.phase="after";S.si=0},anext:function(){S.si++},
-    toQuiz:function(){mark(ep2.id,"story");S.phase="quiz"},toTask:function(){S.phase="task"},taskDone:function(){mark(ep2.id,"task")},map:function(){S.level=null}};
+    toQuiz:function(){mark(ep2.id,"story");S.phase="quiz"},toTask:function(){S.phase="task"},taskDone:function(){mark(ep2.id,"task")},map:function(){S.level=null;S.forceText=false}};
   if(A[a])go(A[a]);
 });
 document.addEventListener("change",function(e){var s=e.target;if(s.dataset&&s.dataset.st){lessonSt[s.dataset.st]=s.value;wr(KEY,lessonSt);render()}});
